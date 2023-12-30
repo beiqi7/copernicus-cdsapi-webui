@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Copernicus Data Download</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material You Color -->
+    <style>
+        :root {
+            --primary-color: #6200EE; /* 主色，根据Material You自定义 */
+            --on-primary-color: #FFFFFF; /* 文本颜色，根据Material You自定义 */
+        }
+
+        /* 根据Material You自定义更改页面元素样式 */
+        body {
+            background-color: var(--primary-color);
+            color: var(--on-primary-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h1 class="text-center">Copernicus Data Download</h1>
+                <form action="/" method="post">
+                    <div class="form-group">
+                        <label for="product_type">Product Type:</label>
+                        <select id="product_type" name="product_type" class="form-control">
+                            <option value="reanalysis">Reanalysis</option>
+                            <option value="ensemble_members">Ensemble members</option>
+                            <option value="ensemble_mean">Ensemble mean</option>
+                            <option value="ensemble_spread">Ensemble spread</option>
+                        </select>
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <label for="variable">Variable:</label>
+                        <select id="variable" name="variable" class="form-control" multiple>
+                            <option value="geopotential">Geopotential</option>
+                            <option value="specific_snow_water_content">Specific snow water content</option>
+                            <option value="ozone_mass_mixing_ratio">Ozone mass mixing ratio</option>
+                            <option value="temperature">Temperature</option>
+                            <option value="specific_humidity">Specific humidity</option>
+                            <option value="relative_humidity">Relative humidity</option>
+                            <option value="specific_cloud_ice_water_content">Specific cloud ice water content</option>
+                            <option value="specific_cloud_liquid_water_content">Specific cloud liquid water content</option>
+                            <option value="v_component_of_wind">V-component of wind</option>
+                            <option value="u_component_of_wind">U-component of wind</option>
+                            <option value="vertical_velocity">Vertical velocity</option>
+                            <option value="vorticity">Vorticity (relative)</option>
+                            <option value="divergence">Divergence</option>
+                            <option value="fraction_of_cloud_cover">Fraction of cloud cover</option>
+                            <option value="potential_vorticity">Potential vorticity</option>
+                        </select>
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <label for="pressure_level">Pressure Level:</label>
+                        <select id="pressure_level" name="pressure_level" class="form-control">
+                            <option value="1">1 hPa</option>
+                            <option value="2">2 hPa</option>
+                            <option value="3">3 hPa</option>
+                            <option value="5">5 hPa</option>
+                            <option value="7">7 hPa</option>
+                            <option value="10">10 hPa</option>
+                            <option value="20">20 hPa</option>
+                            <option value="30">30 hPa</option>
+                            <option value="50">50 hPa</option>
+                            <option value="70">70 hPa</option>
+                            <option value="100">100 hPa</option>
+                            <option value="125">125 hPa</option>
+                            <option value="150">150 hPa</option>
+                            <option value="175">175 hPa</option>
+                            <option value="200">200 hPa</option>
+                            <option value="225">225 hPa</option>
+                            <option value="250">250 hPa</option>
+                            <option value="300">300 hPa</option>
+                            <option value="350">350 hPa</option>
+                            <option value="400">400 hPa</option>
+                            <option value="450">450 hPa</option>
+                            <option value="500">500 hPa</option>
+                            <option value="550">550 hPa</option>
+                            <option value="600">600 hPa</option>
+                            <option value="650">650 hPa</option>
+                            <option value="700">700 hPa</option>
+                            <option value="750">750 hPa</option>
+                            <option value="775">775 hPa</option>
+                            <option value="800">800 hPa</option>
+                            <option value="825">825 hPa</option>
+                            <option value="850">850 hPa</option>
+                            <option value="875">875 hPa</option>
+                            <option value="900">900 hPa</option>
+                            <option value="925">925 hPa</option>
+                            <option value="950">950 hPa</option>
+                            <option value="975">975 hPa</option>
+                            <option value="1000">1000 hPa</option>
+                        </select>
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <label for="year">Year:</label>
+                        <input type="number" id="year" name="year" class="form-control" min="1940" max="2023">
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <label for="month">Month:</label>
+                        <select id="month" name="month" class="form-control">
+                            <option value="01">January</option>
+                            <option value="02">February</option>
+                            <option value="03">March</option>
+                            <option value="04">April</option>
+                            <option value="05">May</option>
+                            <option value="06">June</option>
+                            <option value="07">July</option>
+                            <option value="08">August</option>
+                            <option value="09">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <label for="day">Day:</label>
+                        <select id="day" name="day" class="form-control">
+                            <option value="01">01</option>
+                            <option value="02">02</option>
+                            <option value="03">03</option>
+                            <option value="04">04</option>
+                            <option value="05">05</option>
+                            <option value="06">06</option>
+                            <option value="07">07</option>
+                            <option value="08">08</option>
+                            <option value="09">09</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                            <option value="21">21</option>
+                            <option value="22">22</option>
+                            <option value="23">23</option>
+                            <option value="24">24</option>
+                            <option value="25">25</option>
+                            <option value="26">26</option>
+                            <option value="27">27</option>
+                            <option value="28">28</option>
+                            <option value="29">29</option>
+                            <option value="30">30</option>
+                            <option value="31">31</option>
+                        </select>
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <label for="time">Time:</label>
+                        <select id="time" name="time" class="form-control">
+                            <option value="00:00">00:00</option>
+                            <option value="01:00">01:00</option>
+                            <option value="02:00">02:00</option>
+                            <option value="03:00">03:00</option>
+                            <option value="04:00">04:00</option>
+                            <option value="05:00">05:00</option>
+                            <option value="06:00">06:00</option>
+                            <option value="07:00">07:00</option>
+                            <option value="08:00">08:00</option>
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="12:00">12:00</option>
+                            <option value="13:00">13:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                            <option value="18:00">18:00</option>
+                            <option value="19:00">19:00</option>
+                            <option value="20:00">20:00</option>
+                            <option value="21:00">21:00</option>
+                            <option value="22:00">22:00</option>
+                            <option value="23:00">23:00</option>
+                        </select>
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <label for="geographical_area">Geographical Area:</label>
+                        <select id="geographical_area" name="geographical_area" class="form-control">
+                            <option value="whole_available_region">Whole available region</option>
+                            <option value="sub_region_extraction">Sub-region extraction</option>
+                        </select>
+                    </div>
+                    <br>
+
+                    <div class="form-group">
+                        <label for="north">North:</label>
+                        <input type="text" id="north" name="north" class="form-control" placeholder="Enter North Latitude">
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label for="west">West:</label>
+                        <input type="text" id="west" name="west" class="form-control" placeholder="Enter West Longitude">
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label for="south">South:</label>
+                        <input type="text" id="south" name="south" class="form-control" placeholder="Enter South Latitude">
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label for="east">East:</label>
+                        <input type="text" id="east" name="east" class="form-control" placeholder="Enter East Longitude">
+                    </div>
+                    <br>
+                    <!-- 其他表单项 -->
+                    
+                    <div class="text-center">
+                        <input type="submit" value="Download" class="btn btn-primary">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript -->
+    <script>
+        document.getElementById('geographical_area').addEventListener('change', function() {
+            var wholeAvailableRegion = this.value === 'whole_available_region';
+            document.getElementById('north').disabled = wholeAvailableRegion;
+            document.getElementById('west').disabled = wholeAvailableRegion;
+            document.getElementById('south').disabled = wholeAvailableRegion;
+            document.getElementById('east').disabled = wholeAvailableRegion;
+        });
+    </script>
+</body>
+</html>
