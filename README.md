@@ -10,7 +10,7 @@ pip install flask
 
 python era5.py
 
-Then use your favorite reserved proxy app
+Or use your favorite reserved proxy and WSGI app to run it
 ***
 Test: https://era5.akari.icu/
 
