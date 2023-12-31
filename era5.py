@@ -3,7 +3,6 @@ import cdsapi
 
 app = Flask(__name__)
 
-# Copernicus API配置，包括API key
 def download_ecmwf_data(params):
     c = cdsapi.Client()
 
@@ -29,7 +28,6 @@ def index():
         if not variable:
             variable = ['geopotential']  # 设置默认变量
 
-        # 根据用户的选择构建API请求参数
         params = {
             'product_type': product_type,
             'variable': variable,
