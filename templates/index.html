@@ -5,11 +5,13 @@
     <title>Copernicus Data Download</title>
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Material You Color -->
+    <!-- Dark Mode Color Scheme -->
     <style>
         :root {
-            --primary-color: #6200EE;
-            --on-primary-color: #FFFFFF;
+            --primary-color: #121212; /* Dark background */
+            --on-primary-color: #E0E0E0; /* Light text */
+            --navbar-background-color: #1F1B24; /* Darker shade for navbar */
+            --footer-background-color: #0A0A0A; /* Even darker shade for footer */
         }
 
         body {
@@ -17,9 +19,45 @@
             color: var(--on-primary-color);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
+        .navbar, .footer {
+            background-color: var(--navbar-background-color);
+            color: var(--on-primary-color);
+        }
+
+        .footer {
+            padding: 10px 0;
+            text-align: center;
+            background-color: var(--footer-background-color);
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Copernicus Data</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Placeholder</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Placeholder</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">
@@ -104,9 +142,25 @@
 
                     <div class="form-group">
                         <label for="year">Year:</label>
-                        <input type="number" id="year" name="year" class="form-control" min="1940" max="2023">
+                        <select id="year" name="year" class="form-control" multiple>
+                            <!-- Options will be added here by JavaScript -->
+                        </select>
                     </div>
                     <br>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var startYear = 1940;
+                            var endYear = new Date().getFullYear(); // 动态获取当前年份
+                            var yearSelect = document.getElementById('year');
+
+                            for (var year = startYear; year <= endYear; year++) {
+                                var option = new Option(year, year, year === endYear, year === endYear);
+                                yearSelect.add(option);
+                            }
+                        });
+                    </script>
+
+
 
                     <div class="form-group">
                         <label for="month">Month:</label>
@@ -199,7 +253,7 @@
                     <div class="form-group">
                         <label for="geographical_area">Geographical Area:</label>
                         <select id="geographical_area" name="geographical_area" class="form-control">
-                            <option value="whole_available_region">Whole available region</option>
+                            <option value="whole_available_region" selected>Whole available region</option>
                             <option value="sub_region_extraction">Sub-region extraction</option>
                         </select>
                     </div>
@@ -225,6 +279,25 @@
                         <input type="text" id="east" name="east" class="form-control" placeholder="Enter East Longitude">
                     </div>
                     <br>
+                    <script>
+                        function updateInputFields() {
+                            var geographicalAreaSelect = document.getElementById('geographical_area');
+                            var isSubRegionExtraction = geographicalAreaSelect.value === 'sub_region_extraction';
+                            
+                            document.getElementById('north').disabled = !isSubRegionExtraction;
+                            document.getElementById('west').disabled = !isSubRegionExtraction;
+                            document.getElementById('south').disabled = !isSubRegionExtraction;
+                            document.getElementById('east').disabled = !isSubRegionExtraction;
+                        }
+
+                        // 监听地理区域选择变化
+                        document.getElementById('geographical_area').addEventListener('change', updateInputFields);
+
+                        // 页面加载完成时立即更新输入框状态
+                        document.addEventListener('DOMContentLoaded', updateInputFields);
+                    </script>
+
+
                     <!-- 其他表单项 -->
                     
                     <div class="text-center">
@@ -235,12 +308,17 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <div class="footer">
+        &copy; 2024 Copernicus Data Download. All rights reserved.
+    </div>
+
     <!-- Bootstrap JavaScript -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- JavaScript -->
+    <!-- JavaScript for toggling geographical area fields -->
     <script>
         document.getElementById('geographical_area').addEventListener('change', function() {
             var wholeAvailableRegion = this.value === 'whole_available_region';
