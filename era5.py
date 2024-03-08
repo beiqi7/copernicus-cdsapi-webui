@@ -1,17 +1,21 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, redirect, url_for
 import cdsapi
 
 app = Flask(__name__)
 
 def download_ecmwf_data(params):
     c = cdsapi.Client()
-
-    result = c.retrieve(
-        'reanalysis-era5-pressure-levels',
-        params,
-        'download.nc'
-    )
-    return result
+    try:
+        result = c.retrieve(
+            'reanalysis-era5-pressure-levels',
+            params,
+            'download.nc'
+        )
+        return result
+    except Exception as e:
+        print("API call failed:", e)
+        # 如果API调用失败，返回None
+        return None
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -52,6 +56,10 @@ def index():
         # 使用构建的参数调用Copernicus API下载数据
         result = download_ecmwf_data(params)
 
+        if result is None:
+            # 如果结果为None，说明API调用失败，重定向到失败页面
+            return redirect(url_for('error'))
+
         # 打印参数，用于确认参数是否正确
         print("Params:", params)
 
@@ -59,6 +67,11 @@ def index():
         return send_file('download.nc', as_attachment=True)
 
     return render_template('index.html')
+
+@app.route('/error')
+def error():
+    # 渲染一个错误页面
+    return render_template('error.html'), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
