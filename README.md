@@ -15,3 +15,6 @@ Or use your favorite reserved proxy and WSGI app to run it
 Test: https://era5.akari.icu/
 
 Official API Usage: https://cds.climate.copernicus.eu/api-how-to
+
+CDS-API is now facing some internal problems, it will be unable to download data sometimes
+https://forum.ecmwf.int/t/a-new-cds-soon-to-be-launched-expect-some-disruptions/1607
