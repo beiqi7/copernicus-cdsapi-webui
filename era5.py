@@ -6,12 +6,10 @@ app = Flask(__name__)
 def download_ecmwf_data(params):
     c = cdsapi.Client()
     try:
-        result = c.retrieve(
-            'reanalysis-era5-pressure-levels',
-            params,
-            'download.nc'
-        )
-        return result
+        dataset = "reanalysis-era5-pressure-levels"
+        result = c.retrieve(dataset, params)
+        result.download('download.nc')  # 将下载的文件保存为 download.nc
+        return 'download.nc'
     except Exception as e:
         print("API call failed:", e)
         # 如果API调用失败，返回None
@@ -33,14 +31,15 @@ def index():
             variable = ['geopotential']  # 设置默认变量
 
         params = {
-            'product_type': product_type,
+            'product_type': [product_type],
             'variable': variable,
-            'pressure_level': pressure_level,
-            'year': year,
-            'month': month,
-            'day': day,
-            'time': time
-            # 添加其他参数
+            'pressure_level': [pressure_level],
+            'year': [year],
+            'month': [month],
+            'day': [day],
+            'time': [time],
+            'data_format': 'netcdf',
+            'download_format': 'unarchived'
         }
 
         # 如果选择了整个可用区域，则删除地理区域参数
@@ -54,9 +53,9 @@ def index():
             params['area'] = [float(north), float(west), float(south), float(east)]
 
         # 使用构建的参数调用Copernicus API下载数据
-        result = download_ecmwf_data(params)
+        downloaded_file = download_ecmwf_data(params)
 
-        if result is None:
+        if downloaded_file is None:
             # 如果结果为None，说明API调用失败，重定向到失败页面
             return redirect(url_for('error'))
 
@@ -64,7 +63,7 @@ def index():
         print("Params:", params)
 
         # 将下载完成的文件发送给客户端
-        return send_file('download.nc', as_attachment=True)
+        return send_file(downloaded_file, as_attachment=True)
 
     return render_template('index.html')
 
