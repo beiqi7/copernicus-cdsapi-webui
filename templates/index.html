@@ -77,21 +77,22 @@
                     <div class="form-group">
                         <label for="variable">Variable:</label>
                         <select id="variable" name="variable" class="form-control" multiple>
+                            <option value="divergence">Divergence</option>
+                            <option value="fraction_of_cloud_cover">Fraction of cloud cover</option>
                             <option value="geopotential">Geopotential</option>
-                            <option value="specific_snow_water_content">Specific snow water content</option>
                             <option value="ozone_mass_mixing_ratio">Ozone mass mixing ratio</option>
-                            <option value="temperature">Temperature</option>
-                            <option value="specific_humidity">Specific humidity</option>
+                            <option value="potential_vorticity">Potential vorticity</option>
                             <option value="relative_humidity">Relative humidity</option>
                             <option value="specific_cloud_ice_water_content">Specific cloud ice water content</option>
                             <option value="specific_cloud_liquid_water_content">Specific cloud liquid water content</option>
-                            <option value="v_component_of_wind">V-component of wind</option>
+                            <option value="specific_humidity">Specific humidity</option>
+                            <option value="specific_rain_water_content">Specific rain water content</option>
+                            <option value="specific_snow_water_content">Specific snow water content</option>
+                            <option value="temperature">Temperature</option>
                             <option value="u_component_of_wind">U-component of wind</option>
+                            <option value="v_component_of_wind">V-component of wind</option>
                             <option value="vertical_velocity">Vertical velocity</option>
-                            <option value="vorticity">Vorticity (relative)</option>
-                            <option value="divergence">Divergence</option>
-                            <option value="fraction_of_cloud_cover">Fraction of cloud cover</option>
-                            <option value="potential_vorticity">Potential vorticity</option>
+                            <option value="vorticity">Vorticity</option>
                         </select>
                     </div>
                     <br>
@@ -159,8 +160,6 @@
                             }
                         });
                     </script>
-
-
 
                     <div class="form-group">
                         <label for="month">Month:</label>
@@ -261,22 +260,22 @@
 
                     <div class="form-group">
                         <label for="north">North:</label>
-                        <input type="text" id="north" name="north" class="form-control" placeholder="Enter North Latitude">
+                        <input type="text" id="north" name="north" class="form-control" placeholder="Enter North Latitude" disabled>
                     </div>
                     <br>
                     <div class="form-group">
                         <label for="west">West:</label>
-                        <input type="text" id="west" name="west" class="form-control" placeholder="Enter West Longitude">
+                        <input type="text" id="west" name="west" class="form-control" placeholder="Enter West Longitude" disabled>
                     </div>
                     <br>
                     <div class="form-group">
                         <label for="south">South:</label>
-                        <input type="text" id="south" name="south" class="form-control" placeholder="Enter South Latitude">
+                        <input type="text" id="south" name="south" class="form-control" placeholder="Enter South Latitude" disabled>
                     </div>
                     <br>
                     <div class="form-group">
                         <label for="east">East:</label>
-                        <input type="text" id="east" name="east" class="form-control" placeholder="Enter East Longitude">
+                        <input type="text" id="east" name="east" class="form-control" placeholder="Enter East Longitude" disabled>
                     </div>
                     <br>
                     <script>
@@ -296,7 +295,6 @@
                         // 页面加载完成时立即更新输入框状态
                         document.addEventListener('DOMContentLoaded', updateInputFields);
                     </script>
-
 
                     <!-- 其他表单项 -->
                     
@@ -318,15 +316,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- JavaScript for toggling geographical area fields -->
-    <script>
-        document.getElementById('geographical_area').addEventListener('change', function() {
-            var wholeAvailableRegion = this.value === 'whole_available_region';
-            document.getElementById('north').disabled = wholeAvailableRegion;
-            document.getElementById('west').disabled = wholeAvailableRegion;
-            document.getElementById('south').disabled = wholeAvailableRegion;
-            document.getElementById('east').disabled = wholeAvailableRegion;
-        });
-    </script>
 </body>
 </html>
