@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, send_file, redirect, url_for
 import cdsapi
+import threading
+import time
 
 app = Flask(__name__)
 
@@ -8,12 +10,25 @@ def download_ecmwf_data(params):
     try:
         dataset = "reanalysis-era5-pressure-levels"
         result = c.retrieve(dataset, params)
-        result.download('download.nc')  # 将下载的文件保存为 download.nc
+        result.download('download.nc')
         return 'download.nc'
     except Exception as e:
-        print("API call failed:", e)
-        # 如果API调用失败，返回None
+        print("API调用失败:", e)
         return None
+
+def download_with_timeout(params):
+    result = [None]
+    def target():
+        result[0] = download_ecmwf_data(params)
+    
+    thread = threading.Thread(target=target)
+    thread.start()
+    thread.join(timeout=60)  # 60秒超时
+    
+    if thread.is_alive():
+        print("下载超时")
+        return None
+    return result[0]
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -28,7 +43,7 @@ def index():
         geographical_area = request.form['geographical_area']
 
         if not variable:
-            variable = ['geopotential']  # 设置默认变量
+            variable = ['geopotential']
 
         params = {
             'product_type': [product_type],
@@ -42,7 +57,6 @@ def index():
             'download_format': 'unarchived'
         }
 
-        # 如果选择了整个可用区域，则删除地理区域参数
         if geographical_area == 'whole_available_region':
             params.pop('geographical_area', None)
         else:
@@ -52,25 +66,20 @@ def index():
             east = request.form['east']
             params['area'] = [float(north), float(west), float(south), float(east)]
 
-        # 使用构建的参数调用Copernicus API下载数据
-        downloaded_file = download_ecmwf_data(params)
+        downloaded_file = download_with_timeout(params)
 
         if downloaded_file is None:
-            # 如果结果为None，说明API调用失败，重定向到失败页面
             return redirect(url_for('error'))
 
-        # 打印参数，用于确认参数是否正确
-        print("Params:", params)
+        print("参数:", params)
 
-        # 将下载完成的文件发送给客户端
         return send_file(downloaded_file, as_attachment=True)
 
     return render_template('index.html')
 
 @app.route('/error')
 def error():
-    # 渲染一个错误页面
-    return render_template('error.html'), 500
+    return render_template('error.html'), 502
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False, host='0.0.0.0')
