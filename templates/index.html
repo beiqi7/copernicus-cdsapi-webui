@@ -2,81 +2,150 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Copernicus Data Download</title>
     <!-- Bootstrap CSS -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Dark Mode Color Scheme -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 自定义样式 -->
     <style>
         :root {
-            --primary-color: #121212; /* Dark background */
-            --on-primary-color: #E0E0E0; /* Light text */
-            --navbar-background-color: #1F1B24; /* Darker shade for navbar */
-            --footer-background-color: #0A0A0A; /* Even darker shade for footer */
+            --primary-color: #f8f9fa;
+            --secondary-color: #e9ecef;
+            --text-color: #343a40;
+            --accent-color: #007bff;
         }
 
         body {
             background-color: var(--primary-color);
-            color: var(--on-primary-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        .navbar, .footer {
-            background-color: var(--navbar-background-color);
-            color: var(--on-primary-color);
+        .navbar {
+            background-color: var(--accent-color);
+        }
+
+        .navbar-brand, .nav-link {
+            color: white !important;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin-bottom: 30px;
+        }
+
+        .form-control, .btn {
+            border-radius: 5px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
         }
 
         .footer {
-            padding: 10px 0;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            padding: 20px 0;
             text-align: center;
-            background-color: var(--footer-background-color);
-            position: relative;
-            bottom: 0;
-            width: 100%;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* 暗色模式样式 */
+        body.dark-mode {
+            --primary-color: #1a1a1a;
+            --secondary-color: #2c2c2c;
+            --text-color: #e0e0e0;
+            --accent-color: #4da6ff;
+        }
+
+        body.dark-mode .container {
+            background-color: #2c2c2c;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+
+        body.dark-mode .form-control {
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+            border-color: #4a4a4a;
+        }
+
+        body.dark-mode .form-select {
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+            border-color: #4a4a4a;
+        }
+
+        /* 暗色模式切换按钮样式 */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
+    <!-- 暗色模式切换按钮 -->
+    <button class="btn btn-secondary dark-mode-toggle" onclick="toggleDarkMode()">切换暗色模式</button>
 
-    <!-- Navigation Bar -->
+    <!-- 导航栏 -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">Copernicus Data</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="https://blog.shiina.fun/">Placeholder</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Placeholder</a>
-                </li>
-            </ul>
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Copernicus Data</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://blog.shiina.fun/">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
-    <div class="container mt-5">
+    <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <h1 class="text-center">Copernicus Data Download</h1>
                 <form action="/" method="post">
-                    <div class="form-group">
-                        <label for="product_type">Product Type:</label>
-                        <select id="product_type" name="product_type" class="form-control">
+                    <div class="mb-3">
+                        <label for="product_type" class="form-label">Product Type:</label>
+                        <select id="product_type" name="product_type" class="form-select">
                             <option value="reanalysis">Reanalysis</option>
                             <option value="ensemble_members">Ensemble members</option>
                             <option value="ensemble_mean">Ensemble mean</option>
                             <option value="ensemble_spread">Ensemble spread</option>
                         </select>
                     </div>
-                    <br>
 
-                    <div class="form-group">
-                        <label for="variable">Variable:</label>
-                        <select id="variable" name="variable" class="form-control" multiple>
+                    <div class="mb-3">
+                        <label for="variable" class="form-label">Variable:</label>
+                        <select id="variable" name="variable" class="form-select" multiple>
                             <option value="divergence">Divergence</option>
                             <option value="fraction_of_cloud_cover">Fraction of cloud cover</option>
                             <option value="geopotential">Geopotential</option>
@@ -95,11 +164,10 @@
                             <option value="vorticity">Vorticity</option>
                         </select>
                     </div>
-                    <br>
 
-                    <div class="form-group">
-                        <label for="pressure_level">Pressure Level:</label>
-                        <select id="pressure_level" name="pressure_level" class="form-control" multiple>
+                    <div class="mb-3">
+                        <label for="pressure_level" class="form-label">Pressure Level:</label>
+                        <select id="pressure_level" name="pressure_level" class="form-select" multiple>
                             <option value="1">1 hPa</option>
                             <option value="2">2 hPa</option>
                             <option value="3">3 hPa</option>
@@ -139,31 +207,17 @@
                             <option value="1000">1000 hPa</option>
                         </select>
                     </div>
-                    <br>
 
-                    <div class="form-group">
-                        <label for="year">Year:</label>
-                        <select id="year" name="year" class="form-control" multiple>
+                    <div class="mb-3">
+                        <label for="year" class="form-label">Year:</label>
+                        <select id="year" name="year" class="form-select" multiple>
                             <!-- Options will be added here by JavaScript -->
                         </select>
                     </div>
-                    <br>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function () {
-                            var startYear = 1940;
-                            var endYear = new Date().getFullYear(); // 动态获取当前年份
-                            var yearSelect = document.getElementById('year');
 
-                            for (var year = startYear; year <= endYear; year++) {
-                                var option = new Option(year, year, year === endYear, year === endYear);
-                                yearSelect.add(option);
-                            }
-                        });
-                    </script>
-
-                    <div class="form-group">
-                        <label for="month">Month:</label>
-                        <select id="month" name="month" class="form-control" multiple>
+                    <div class="mb-3">
+                        <label for="month" class="form-label">Month:</label>
+                        <select id="month" name="month" class="form-select" multiple>
                             <option value="01">January</option>
                             <option value="02">February</option>
                             <option value="03">March</option>
@@ -178,143 +232,132 @@
                             <option value="12">December</option>
                         </select>
                     </div>
-                    <br>
 
-                    <div class="form-group">
-                        <label for="day">Day:</label>
-                        <select id="day" name="day" class="form-control" multiple>
-                            <option value="01">01</option>
-                            <option value="02">02</option>
-                            <option value="03">03</option>
-                            <option value="04">04</option>
-                            <option value="05">05</option>
-                            <option value="06">06</option>
-                            <option value="07">07</option>
-                            <option value="08">08</option>
-                            <option value="09">09</option>
-                            <option value="10">10</option>
-                            <option value="11">11</option>
-                            <option value="12">12</option>
-                            <option value="13">13</option>
-                            <option value="14">14</option>
-                            <option value="15">15</option>
-                            <option value="16">16</option>
-                            <option value="17">17</option>
-                            <option value="18">18</option>
-                            <option value="19">19</option>
-                            <option value="20">20</option>
-                            <option value="21">21</option>
-                            <option value="22">22</option>
-                            <option value="23">23</option>
-                            <option value="24">24</option>
-                            <option value="25">25</option>
-                            <option value="26">26</option>
-                            <option value="27">27</option>
-                            <option value="28">28</option>
-                            <option value="29">29</option>
-                            <option value="30">30</option>
-                            <option value="31">31</option>
+                    <div class="mb-3">
+                        <label for="day" class="form-label">Day:</label>
+                        <select id="day" name="day" class="form-select" multiple>
+                            <!-- Options for days 01 to 31 -->
                         </select>
                     </div>
-                    <br>
 
-                    <div class="form-group">
-                        <label for="time">Time:</label>
-                        <select id="time" name="time" class="form-control" multiple>
-                            <option value="00:00">00:00</option>
-                            <option value="01:00">01:00</option>
-                            <option value="02:00">02:00</option>
-                            <option value="03:00">03:00</option>
-                            <option value="04:00">04:00</option>
-                            <option value="05:00">05:00</option>
-                            <option value="06:00">06:00</option>
-                            <option value="07:00">07:00</option>
-                            <option value="08:00">08:00</option>
-                            <option value="09:00">09:00</option>
-                            <option value="10:00">10:00</option>
-                            <option value="11:00">11:00</option>
-                            <option value="12:00">12:00</option>
-                            <option value="13:00">13:00</option>
-                            <option value="14:00">14:00</option>
-                            <option value="15:00">15:00</option>
-                            <option value="16:00">16:00</option>
-                            <option value="17:00">17:00</option>
-                            <option value="18:00">18:00</option>
-                            <option value="19:00">19:00</option>
-                            <option value="20:00">20:00</option>
-                            <option value="21:00">21:00</option>
-                            <option value="22:00">22:00</option>
-                            <option value="23:00">23:00</option>
+                    <div class="mb-3">
+                        <label for="time" class="form-label">Time:</label>
+                        <select id="time" name="time" class="form-select" multiple>
+                            <!-- Options for times 00:00 to 23:00 -->
                         </select>
                     </div>
-                    <br>
 
-                    <div class="form-group">
-                        <label for="geographical_area">Geographical Area:</label>
-                        <select id="geographical_area" name="geographical_area" class="form-control">
+                    <div class="mb-3">
+                        <label for="geographical_area" class="form-label">Geographical Area:</label>
+                        <select id="geographical_area" name="geographical_area" class="form-select">
                             <option value="whole_available_region" selected>Whole available region</option>
                             <option value="sub_region_extraction">Sub-region extraction</option>
                         </select>
                     </div>
-                    <br>
 
-                    <div class="form-group">
-                        <label for="north">North:</label>
+                    <div class="mb-3">
+                        <label for="north" class="form-label">North:</label>
                         <input type="text" id="north" name="north" class="form-control" placeholder="Enter North Latitude" disabled>
                     </div>
-                    <br>
-                    <div class="form-group">
-                        <label for="west">West:</label>
+
+                    <div class="mb-3">
+                        <label for="west" class="form-label">West:</label>
                         <input type="text" id="west" name="west" class="form-control" placeholder="Enter West Longitude" disabled>
                     </div>
-                    <br>
-                    <div class="form-group">
-                        <label for="south">South:</label>
+
+                    <div class="mb-3">
+                        <label for="south" class="form-label">South:</label>
                         <input type="text" id="south" name="south" class="form-control" placeholder="Enter South Latitude" disabled>
                     </div>
-                    <br>
-                    <div class="form-group">
-                        <label for="east">East:</label>
+
+                    <div class="mb-3">
+                        <label for="east" class="form-label">East:</label>
                         <input type="text" id="east" name="east" class="form-control" placeholder="Enter East Longitude" disabled>
                     </div>
-                    <br>
-                    <script>
-                        function updateInputFields() {
-                            var geographicalAreaSelect = document.getElementById('geographical_area');
-                            var isSubRegionExtraction = geographicalAreaSelect.value === 'sub_region_extraction';
-                            
-                            document.getElementById('north').disabled = !isSubRegionExtraction;
-                            document.getElementById('west').disabled = !isSubRegionExtraction;
-                            document.getElementById('south').disabled = !isSubRegionExtraction;
-                            document.getElementById('east').disabled = !isSubRegionExtraction;
-                        }
 
-                        // 监听地理区域选择变化
-                        document.getElementById('geographical_area').addEventListener('change', updateInputFields);
-
-                        // 页面加载完成时立即更新输入框状态
-                        document.addEventListener('DOMContentLoaded', updateInputFields);
-                    </script>
-
-                    <!-- 其他表单项 -->
-                    
-                    <div class="text-center">
-                        <input type="submit" value="Download" class="btn btn-primary">
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Download</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <div class="footer">
-        &copy; 2024 Copernicus Data Download. All rights reserved.
-    </div>
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Copernicus Data Download. All rights reserved.</p>
+        </div>
+    </footer>
 
     <!-- Bootstrap JavaScript -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- 保留原有的JavaScript代码并添加暗色模式相关功能 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var startYear = 1940;
+            var endYear = new Date().getFullYear();
+            var yearSelect = document.getElementById('year');
+
+            for (var year = startYear; year <= endYear; year++) {
+                var option = new Option(year, year, year === endYear, year === endYear);
+                yearSelect.add(option);
+            }
+
+            var daySelect = document.getElementById('day');
+            for (var day = 1; day <= 31; day++) {
+                var dayValue = day < 10 ? '0' + day : day.toString();
+                var option = new Option(dayValue, dayValue);
+                daySelect.add(option);
+            }
+
+            var timeSelect = document.getElementById('time');
+            for (var hour = 0; hour < 24; hour++) {
+                var timeValue = (hour < 10 ? '0' : '') + hour + ':00';
+                var option = new Option(timeValue, timeValue);
+                timeSelect.add(option);
+            }
+
+            // 检查并设置初始暗色模式状态
+            checkAndSetDarkMode();
+        });
+
+        function updateInputFields() {
+            var geographicalAreaSelect = document.getElementById('geographical_area');
+            var isSubRegionExtraction = geographicalAreaSelect.value === 'sub_region_extraction';
+            
+            document.getElementById('north').disabled = !isSubRegionExtraction;
+            document.getElementById('west').disabled = !isSubRegionExtraction;
+            document.getElementById('south').disabled = !isSubRegionExtraction;
+            document.getElementById('east').disabled = !isSubRegionExtraction;
+        }
+
+        document.getElementById('geographical_area').addEventListener('change', updateInputFields);
+        document.addEventListener('DOMContentLoaded', updateInputFields);
+
+        // 暗色模式切换函数
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        // 检查并设置暗色模式状态
+        function checkAndSetDarkMode() {
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            const currentHour = new Date().getHours();
+            const shouldBeDarkMode = isDarkMode || (currentHour >= 19 || currentHour < 6);
+
+            if (shouldBeDarkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        // 每分钟检查一次是否需要切换暗色模式
+        setInterval(checkAndSetDarkMode, 60000);
+    </script>
 
 </body>
 </html>
