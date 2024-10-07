@@ -5,7 +5,7 @@ Mostly product by ChatGPT
 
 You still need to place your API to "$HOME/.cdsapirc" in your environment
 
-Updated to new beta CDSAPI, but now API download is taking longer time than web download, no recommond at this moment!
+CDS API has now fixed, you can use this for small projects!
 
 ## Usage:
 pip install flask
