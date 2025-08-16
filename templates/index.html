@@ -4,298 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Copernicus Data Download</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- 自定义样式 -->
     <style>
-        :root {
-            --primary-color: #f8f9fa;
-            --secondary-color: #e9ecef;
-            --text-color: #343a40;
-            --accent-color: #007bff;
-        }
-
-        body {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .navbar {
-            background-color: var(--accent-color);
-        }
-
-        .navbar-brand, .nav-link {
-            color: white !important;
-        }
-
-        .container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            padding: 30px;
-            margin-top: 30px;
-            margin-bottom: 30px;
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-
-        h1 {
-            color: var(--accent-color);
-            margin-bottom: 30px;
-        }
-
-        .form-control, .btn {
-            border-radius: 5px;
-        }
-
-        .btn-primary {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-
-        .footer {
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-            padding: 20px 0;
-            text-align: center;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        /* 暗色模式样式 */
-        body.dark-mode {
-            --primary-color: #1a1a1a;
-            --secondary-color: #2c2c2c;
-            --text-color: #e0e0e0;
-            --accent-color: #4da6ff;
-        }
-
-        body.dark-mode .container {
-            background-color: #2c2c2c;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
-        }
-
-        body.dark-mode .form-control {
-            background-color: #3a3a3a;
-            color: #e0e0e0;
-            border-color: #4a4a4a;
-        }
-
-        body.dark-mode .form-select {
-            background-color: #3a3a3a;
-            color: #e0e0e0;
-            border-color: #4a4a4a;
-        }
-
-        /* 暗色模式切换按钮样式 */
-        .dark-mode-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
+        .download-status { display: none; margin-top: 20px; }
+        .download-status.show { display: block; }
+        .progress-container { display: none; margin: 20px 0; }
     </style>
 </head>
 <body>
-    <!-- 暗色模式切换按钮 -->
-    <button class="btn btn-secondary dark-mode-toggle" onclick="toggleDarkMode()">切换暗色模式</button>
-
-    <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Copernicus Data</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="https://blog.shiina.fun/">Blog</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <h1 class="text-center">Copernicus Data Download</h1>
-                <form action="/" method="post">
-                    <div class="mb-3">
-                        <label for="product_type" class="form-label">Product Type:</label>
-                        <select id="product_type" name="product_type" class="form-select">
-                            <option value="reanalysis">Reanalysis</option>
-                            <option value="ensemble_members">Ensemble members</option>
-                            <option value="ensemble_mean">Ensemble mean</option>
-                            <option value="ensemble_spread">Ensemble spread</option>
-                        </select>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Copernicus 数据下载系统</h1>
+        
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <form id="downloadForm" method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="product_type" class="form-label">产品类型</label>
+                            <select id="product_type" name="product_type" class="form-select" required>
+                                <option value="reanalysis">Reanalysis</option>
+                                <option value="ensemble_members">Ensemble Members</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="variable" class="form-label">变量</label>
+                            <select id="variable" name="variable" class="form-select" multiple required>
+                                <option value="geopotential">Geopotential</option>
+                                <option value="temperature">Temperature</option>
+                                <option value="u_component_of_wind">U Component of Wind</option>
+                            </select>
+                        </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="variable" class="form-label">Variable:</label>
-                        <select id="variable" name="variable" class="form-select" multiple>
-                            <option value="divergence">Divergence</option>
-                            <option value="fraction_of_cloud_cover">Fraction of cloud cover</option>
-                            <option value="geopotential">Geopotential</option>
-                            <option value="ozone_mass_mixing_ratio">Ozone mass mixing ratio</option>
-                            <option value="potential_vorticity">Potential vorticity</option>
-                            <option value="relative_humidity">Relative humidity</option>
-                            <option value="specific_cloud_ice_water_content">Specific cloud ice water content</option>
-                            <option value="specific_cloud_liquid_water_content">Specific cloud liquid water content</option>
-                            <option value="specific_humidity">Specific humidity</option>
-                            <option value="specific_rain_water_content">Specific rain water content</option>
-                            <option value="specific_snow_water_content">Specific snow water content</option>
-                            <option value="temperature">Temperature</option>
-                            <option value="u_component_of_wind">U-component of wind</option>
-                            <option value="v_component_of_wind">V-component of wind</option>
-                            <option value="vertical_velocity">Vertical velocity</option>
-                            <option value="vorticity">Vorticity</option>
-                        </select>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="pressure_level" class="form-label">压力层</label>
+                            <select id="pressure_level" name="pressure_level" class="form-select" required>
+                                <option value="1000">1000 hPa</option>
+                                <option value="850">850 hPa</option>
+                                <option value="500">500 hPa</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="year" class="form-label">年份</label>
+                            <select id="year" name="year" class="form-select" required></select>
+                        </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="pressure_level" class="form-label">Pressure Level:</label>
-                        <select id="pressure_level" name="pressure_level" class="form-select" multiple>
-                            <option value="1">1 hPa</option>
-                            <option value="2">2 hPa</option>
-                            <option value="3">3 hPa</option>
-                            <option value="5">5 hPa</option>
-                            <option value="7">7 hPa</option>
-                            <option value="10">10 hPa</option>
-                            <option value="20">20 hPa</option>
-                            <option value="30">30 hPa</option>
-                            <option value="50">50 hPa</option>
-                            <option value="70">70 hPa</option>
-                            <option value="100">100 hPa</option>
-                            <option value="125">125 hPa</option>
-                            <option value="150">150 hPa</option>
-                            <option value="175">175 hPa</option>
-                            <option value="200">200 hPa</option>
-                            <option value="225">225 hPa</option>
-                            <option value="250">250 hPa</option>
-                            <option value="300">300 hPa</option>
-                            <option value="350">350 hPa</option>
-                            <option value="400">400 hPa</option>
-                            <option value="450">450 hPa</option>
-                            <option value="500">500 hPa</option>
-                            <option value="550">550 hPa</option>
-                            <option value="600">600 hPa</option>
-                            <option value="650">650 hPa</option>
-                            <option value="700">700 hPa</option>
-                            <option value="750">750 hPa</option>
-                            <option value="775">775 hPa</option>
-                            <option value="800">800 hPa</option>
-                            <option value="825">825 hPa</option>
-                            <option value="850">850 hPa</option>
-                            <option value="875">875 hPa</option>
-                            <option value="900">900 hPa</option>
-                            <option value="925">925 hPa</option>
-                            <option value="950">950 hPa</option>
-                            <option value="975">975 hPa</option>
-                            <option value="1000">1000 hPa</option>
-                        </select>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="month" class="form-label">月份</label>
+                            <select id="month" name="month" class="form-select" required>
+                                <option value="01">January</option>
+                                <option value="02">February</option>
+                                <option value="03">March</option>
+                                <option value="04">April</option>
+                                <option value="05">May</option>
+                                <option value="06">June</option>
+                                <option value="07">July</option>
+                                <option value="08">August</option>
+                                <option value="09">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="day" class="form-label">日期</label>
+                            <select id="day" name="day" class="form-select" required></select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="time" class="form-label">时间</label>
+                            <select id="time" name="time" class="form-select" required></select>
+                        </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="year" class="form-label">Year:</label>
-                        <select id="year" name="year" class="form-select" multiple>
-                            <!-- Options will be added here by JavaScript -->
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="month" class="form-label">Month:</label>
-                        <select id="month" name="month" class="form-select" multiple>
-                            <option value="01">January</option>
-                            <option value="02">February</option>
-                            <option value="03">March</option>
-                            <option value="04">April</option>
-                            <option value="05">May</option>
-                            <option value="06">June</option>
-                            <option value="07">July</option>
-                            <option value="08">August</option>
-                            <option value="09">September</option>
-                            <option value="10">October</option>
-                            <option value="11">November</option>
-                            <option value="12">December</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="day" class="form-label">Day:</label>
-                        <select id="day" name="day" class="form-select" multiple>
-                            <!-- Options for days 01 to 31 -->
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="time" class="form-label">Time:</label>
-                        <select id="time" name="time" class="form-select" multiple>
-                            <!-- Options for times 00:00 to 23:00 -->
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="geographical_area" class="form-label">Geographical Area:</label>
-                        <select id="geographical_area" name="geographical_area" class="form-select">
-                            <option value="whole_available_region" selected>Whole available region</option>
-                            <option value="sub_region_extraction">Sub-region extraction</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="north" class="form-label">North:</label>
-                        <input type="text" id="north" name="north" class="form-control" placeholder="Enter North Latitude" disabled>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="west" class="form-label">West:</label>
-                        <input type="text" id="west" name="west" class="form-control" placeholder="Enter West Longitude" disabled>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="south" class="form-label">South:</label>
-                        <input type="text" id="south" name="south" class="form-control" placeholder="Enter South Latitude" disabled>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="east" class="form-label">East:</label>
-                        <input type="text" id="east" name="east" class="form-control" placeholder="Enter East Longitude" disabled>
-                    </div>
-
+                    
                     <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Download</button>
+                        <button type="submit" class="btn btn-primary btn-lg">开始下载</button>
                     </div>
                 </form>
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="text-center mb-3">
+                        <h5>正在下载数据...</h5>
+                        <p class="text-muted">请耐心等待</p>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+                    </div>
+                </div>
+
+                <div class="download-status" id="downloadStatus">
+                    <div class="alert alert-success">
+                        <h4>下载完成！</h4>
+                        <p>您的数据已准备就绪</p>
+                        <div class="mt-3">
+                            <p><strong>文件名:</strong> <span id="fileName">-</span></p>
+                            <p><strong>文件大小:</strong> <span id="fileSize">-</span></p>
+                            <p><strong>过期时间:</strong> <span id="expiryTime">-</span></p>
+                        </div>
+                        <a href="#" class="btn btn-success" id="downloadLink" target="_blank">
+                            下载文件
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 页脚 -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 Copernicus Data Download. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- 保留原有的JavaScript代码并添加暗色模式相关功能 -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            initializeFormOptions();
+            document.getElementById('downloadForm').addEventListener('submit', handleFormSubmit);
+        });
+
+        function initializeFormOptions() {
             var startYear = 1940;
             var endYear = new Date().getFullYear();
             var yearSelect = document.getElementById('year');
@@ -318,46 +142,66 @@
                 var option = new Option(timeValue, timeValue);
                 timeSelect.add(option);
             }
+        }
 
-            // 检查并设置初始暗色模式状态
-            checkAndSetDarkMode();
-        });
-
-        function updateInputFields() {
-            var geographicalAreaSelect = document.getElementById('geographical_area');
-            var isSubRegionExtraction = geographicalAreaSelect.value === 'sub_region_extraction';
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            showProgress();
             
-            document.getElementById('north').disabled = !isSubRegionExtraction;
-            document.getElementById('west').disabled = !isSubRegionExtraction;
-            document.getElementById('south').disabled = !isSubRegionExtraction;
-            document.getElementById('east').disabled = !isSubRegionExtraction;
-        }
-
-        document.getElementById('geographical_area').addEventListener('change', updateInputFields);
-        document.addEventListener('DOMContentLoaded', updateInputFields);
-
-        // 暗色模式切换函数
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-        }
-
-        // 检查并设置暗色模式状态
-        function checkAndSetDarkMode() {
-            const isDarkMode = localStorage.getItem('darkMode') === 'true';
-            const currentHour = new Date().getHours();
-            const shouldBeDarkMode = isDarkMode || (currentHour >= 19 || currentHour < 6);
-
-            if (shouldBeDarkMode) {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
+            const formData = new FormData(event.target);
+            
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showDownloadStatus(result);
+                } else {
+                    alert('下载失败: ' + result.message);
+                }
+            } catch (error) {
+                alert('网络错误，请稍后重试');
+            } finally {
+                hideProgress();
             }
         }
 
-        // 每分钟检查一次是否需要切换暗色模式
-        setInterval(checkAndSetDarkMode, 60000);
-    </script>
+        function showProgress() {
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('downloadStatus').classList.remove('show');
+            
+            let progress = 0;
+            const progressBar = document.getElementById('progressBar');
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 90) {
+                    clearInterval(interval);
+                }
+            }, 500);
+        }
 
+        function hideProgress() {
+            document.getElementById('progressContainer').style.display = 'none';
+        }
+
+        function showDownloadStatus(result) {
+            document.getElementById('fileName').textContent = result.filename;
+            document.getElementById('fileSize').textContent = result.file_size_mb + ' MB';
+            document.getElementById('expiryTime').textContent = result.expiry_hours + ' 小时';
+            
+            const downloadLink = document.getElementById('downloadLink');
+            downloadLink.href = result.download_url;
+            
+            document.getElementById('downloadStatus').classList.add('show');
+        }
+    </script>
 </body>
-</html>
+</html> 
