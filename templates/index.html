@@ -6,32 +6,109 @@
     <title>Copernicus Data Download</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        body { background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 100%); }
+        .container { max-width: 1080px; }
+        h1 { background: linear-gradient(90deg, #0d6efd, #6610f2); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .download-status { display: none; margin-top: 20px; }
         .download-status.show { display: block; }
-        .progress-container { display: none; margin: 20px 0; }
+        .progress-container { display: none; margin: 24px 0; }
+        .progress { height: 12px; background-color: #e9ecef; }
+        .alert { box-shadow: 0 8px 24px rgba(0,0,0,0.06); border: 0; border-left: 4px solid #198754; }
+        .form-select[multiple] { min-height: 160px; }
+        .btn-lg { padding: 0.75rem 1.5rem; }
+        footer { border-top: 1px solid #e9ecef; }
+        footer a { text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (prefers-color-scheme: dark) {
+            body { background: linear-gradient(180deg, #0b0e13 0%, #12161d 100%); color: #e2e6ea; }
+            .alert { background-color: #0f5132; border-left-color: #198754; color: #d1fae5; }
+            .form-select[multiple] { background-color: #1c2128; color: #e2e6ea; border-color: #30363d; }
+            .form-select option { background-color: #1c2128; color: #e2e6ea; }
+            .progress { background-color: #2b3138; }
+            footer { border-top-color: #2b3138; }
+        }
+        /* 手动主题覆盖 */
+        body[data-theme='dark'] { background: linear-gradient(180deg, #0b0e13 0%, #12161d 100%) !important; color: #e2e6ea !important; }
+        body[data-theme='dark'] .alert { background-color: #0f5132 !important; border-left-color: #198754 !important; color: #d1fae5 !important; }
+        body[data-theme='dark'] .form-select[multiple] { background-color: #1c2128 !important; color: #e2e6ea !important; border-color: #30363d !important; }
+        body[data-theme='dark'] .form-select option { background-color: #1c2128 !important; color: #e2e6ea !important; }
+        body[data-theme='dark'] .progress { background-color: #2b3138 !important; }
+        body[data-theme='dark'] footer { border-top-color: #2b3138 !important; }
+
+        body[data-theme='light'] { background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 100%) !important; color: #212529 !important; }
+        body[data-theme='light'] .alert { background-color: #d1e7dd !important; color: #0f5132 !important; }
+        body[data-theme='light'] .form-select[multiple] { background-color: #fff !important; color: #212529 !important; border-color: #ced4da !important; }
+        body[data-theme='light'] .form-select option { background-color: #fff !important; color: #212529 !important; }
+        body[data-theme='light'] .progress { background-color: #e9ecef !important; }
+        body[data-theme='light'] footer { border-top-color: #e9ecef !important; }
     </style>
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Copernicus 数据下载系统</h1>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="flex-grow-1">
+                <h1 class="mb-0 display-6 fw-bold">Copernicus 数据下载系统</h1>
+                <p class="text-muted mb-0">ERA5 压力层数据快速下载与临时链接分享</p>
+            </div>
+            <div>
+                <div class="btn-group btn-group-sm" role="group" aria-label="主题">
+                    <button type="button" class="btn btn-outline-secondary" id="btnThemeAuto">跟随系统</button>
+                    <button type="button" class="btn btn-outline-secondary" id="btnThemeLight">浅色</button>
+                    <button type="button" class="btn btn-outline-secondary" id="btnThemeDark">深色</button>
+                </div>
+            </div>
+        </div>
         
         <div class="row">
             <div class="col-lg-8 mx-auto">
                 <form id="downloadForm" method="POST">
+                    <div class="mb-3 d-flex flex-wrap gap-2">
+                        <div class="btn-group" role="group" aria-label="区域预设">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" id="presetGlobal">全球</button>
+                            <button class="btn btn-outline-secondary btn-sm" type="button" id="presetChina">中国大陆</button>
+                            <button class="btn btn-outline-secondary btn-sm" type="button" id="presetEurope">欧洲</button>
+                        </div>
+                        <div class="btn-group" role="group" aria-label="月份快捷">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" id="allMonths">全年</button>
+                            <button class="btn btn-outline-secondary btn-sm" type="button" id="currentMonth">当月</button>
+                        </div>
+                        <div class="btn-group" role="group" aria-label="小时快捷">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" id="allHours">全天</button>
+                            <button class="btn btn-outline-secondary btn-sm" type="button" id="synopticHours">00/06/12/18</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="op_id" id="op_id" value="">
+                    <input type="hidden" name="op_id" id="op_id" value="">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="product_type" class="form-label">产品类型</label>
-                            <select id="product_type" name="product_type" class="form-select" required>
-                                <option value="reanalysis">Reanalysis</option>
-                                <option value="ensemble_members">Ensemble Members</option>
+                            <select id="product_type" name="product_type" class="form-select" multiple required>
+                                <option value="reanalysis">reanalysis</option>
+                                <option value="ensemble_members">ensemble_members</option>
+                                <option value="ensemble_mean">ensemble_mean</option>
+                                <option value="ensemble_spread">ensemble_spread</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="variable" class="form-label">变量</label>
                             <select id="variable" name="variable" class="form-select" multiple required>
-                                <option value="geopotential">Geopotential</option>
-                                <option value="temperature">Temperature</option>
-                                <option value="u_component_of_wind">U Component of Wind</option>
+                                <option value="divergence">divergence</option>
+                                <option value="fraction_of_cloud_cover">fraction_of_cloud_cover</option>
+                                <option value="geopotential">geopotential</option>
+                                <option value="ozone_mass_mixing_ratio">ozone_mass_mixing_ratio</option>
+                                <option value="potential_vorticity">potential_vorticity</option>
+                                <option value="relative_humidity">relative_humidity</option>
+                                <option value="specific_cloud_ice_water_content">specific_cloud_ice_water_content</option>
+                                <option value="specific_cloud_liquid_water_content">specific_cloud_liquid_water_content</option>
+                                <option value="specific_humidity">specific_humidity</option>
+                                <option value="specific_rain_water_content">specific_rain_water_content</option>
+                                <option value="specific_snow_water_content">specific_snow_water_content</option>
+                                <option value="temperature">temperature</option>
+                                <option value="u_component_of_wind">u_component_of_wind</option>
+                                <option value="v_component_of_wind">v_component_of_wind</option>
+                                <option value="vertical_velocity">vertical_velocity</option>
+                                <option value="vorticity">vorticity</option>
                             </select>
                         </div>
                     </div>
@@ -39,22 +116,56 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="pressure_level" class="form-label">压力层</label>
-                            <select id="pressure_level" name="pressure_level" class="form-select" required>
-                                <option value="1000">1000 hPa</option>
-                                <option value="850">850 hPa</option>
-                                <option value="500">500 hPa</option>
+                            <select id="pressure_level" name="pressure_level" class="form-select" multiple required>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="5">5</option>
+                                <option value="7">7</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                                <option value="50">50</option>
+                                <option value="70">70</option>
+                                <option value="100">100</option>
+                                <option value="125">125</option>
+                                <option value="150">150</option>
+                                <option value="175">175</option>
+                                <option value="200">200</option>
+                                <option value="225">225</option>
+                                <option value="250">250</option>
+                                <option value="300">300</option>
+                                <option value="350">350</option>
+                                <option value="400">400</option>
+                                <option value="450">450</option>
+                                <option value="500">500</option>
+                                <option value="550">550</option>
+                                <option value="600">600</option>
+                                <option value="650">650</option>
+                                <option value="700">700</option>
+                                <option value="750">750</option>
+                                <option value="775">775</option>
+                                <option value="800">800</option>
+                                <option value="825">825</option>
+                                <option value="850">850</option>
+                                <option value="875">875</option>
+                                <option value="900">900</option>
+                                <option value="925">925</option>
+                                <option value="950">950</option>
+                                <option value="975">975</option>
+                                <option value="1000">1000</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="year" class="form-label">年份</label>
-                            <select id="year" name="year" class="form-select" required></select>
+                            <select id="year" name="year" class="form-select" multiple required></select>
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="month" class="form-label">月份</label>
-                            <select id="month" name="month" class="form-select" required>
+                            <select id="month" name="month" class="form-select" multiple required>
                                 <option value="01">January</option>
                                 <option value="02">February</option>
                                 <option value="03">March</option>
@@ -67,56 +178,132 @@
                                 <option value="10">October</option>
                                 <option value="11">November</option>
                                 <option value="12">December</option>
-                            </select>
+                        </select>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="day" class="form-label">日期</label>
-                            <select id="day" name="day" class="form-select" required></select>
+                            <select id="day" name="day" class="form-select" multiple required></select>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="time" class="form-label">时间</label>
-                            <select id="time" name="time" class="form-select" required></select>
+                            <select id="time" name="time" class="form-select" multiple required></select>
                         </div>
                     </div>
                     
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">可选区域（纬向范围）</label>
+                            <div class="input-group">
+                                <span class="input-group-text">北</span>
+                                <input type="number" step="0.01" min="-90" max="90" class="form-control" name="north" id="north" placeholder="90（默认）">
+                                <span class="input-group-text">南</span>
+                                <input type="number" step="0.01" min="-90" max="90" class="form-control" name="south" id="south" placeholder="-90（默认）">
+                            </div>
+                            <div class="form-text">范围：-90 到 90</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">可选区域（经向范围）</label>
+                            <div class="input-group">
+                                <span class="input-group-text">西</span>
+                                <input type="number" step="0.01" min="-180" max="180" class="form-control" name="west" id="west" placeholder="-180（默认）">
+                                <span class="input-group-text">东</span>
+                                <input type="number" step="0.01" min="-180" max="180" class="form-control" name="east" id="east" placeholder="180（默认）">
+                            </div>
+                            <div class="form-text">范围：-180 到 180</div>
+                        </div>
+                    </div>
+
                     <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">开始下载</button>
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <span class="spinner-border spinner-border-sm me-2 d-none" id="submitSpinner" role="status" aria-hidden="true"></span>
+                            开始下载
+                        </button>
                     </div>
                 </form>
 
                 <div class="progress-container" id="progressContainer">
                     <div class="text-center mb-3">
-                        <h5>正在下载数据...</h5>
-                        <p class="text-muted">请耐心等待</p>
+                        <h5 id="progressTitle">正在准备请求...</h5>
+                        <p class="text-muted" id="progressText">排队中，请稍候</p>
+                        <p class="text-muted small mb-0" id="progressReqId" style="display:none">Request ID: <span id="reqIdSpan"></span></p>
                     </div>
                     <div class="progress">
-                        <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" id="progressBar"></div>
                     </div>
                 </div>
 
                 <div class="download-status" id="downloadStatus">
                     <div class="alert alert-success">
-                        <h4>下载完成！</h4>
-                        <p>您的数据已准备就绪</p>
-                        <div class="mt-3">
-                            <p><strong>文件名:</strong> <span id="fileName">-</span></p>
-                            <p><strong>文件大小:</strong> <span id="fileSize">-</span></p>
-                            <p><strong>过期时间:</strong> <span id="expiryTime">-</span></p>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">✅</div>
+                            <div>
+                                <h4 class="mb-1">下载完成！</h4>
+                                <p class="mb-2 text-muted">您的数据已准备就绪</p>
+                                <div class="small text-muted">
+                                    <div><strong>文件名:</strong> <span id="fileName">-</span></div>
+                                    <div><strong>文件大小:</strong> <span id="fileSize">-</span></div>
+                                    <div><strong>过期时间:</strong> <span id="expiryTime">-</span></div>
+                                </div>
+                            </div>
                         </div>
-                        <a href="#" class="btn btn-success" id="downloadLink" target="_blank">
-                            下载文件
-                        </a>
+                        <div class="mt-3">
+                            <a href="#" class="btn btn-success" id="downloadLink" target="_blank">下载文件</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+        </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+    <footer class="py-4 mt-5">
+        <div class="container text-center small text-muted">
+            <div>
+                相关链接：
+                <a href="https://www.ecmwf.int/" target="_blank" rel="noopener noreferrer">ECMWF</a>
+                ·
+                <a href="https://cds.climate.copernicus.eu/api-how-to" target="_blank" rel="noopener noreferrer">CDS API</a>
+            </div>
+            <div class="mt-1">
+                © <span id="copyrightYear"></span> Copernicus Data Download UI. 本页面仅为学习与研究用途。
+            </div>
+        </div>
+    </footer>
+ 
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+     <script>
         document.addEventListener('DOMContentLoaded', function () {
             initializeFormOptions();
             document.getElementById('downloadForm').addEventListener('submit', handleFormSubmit);
+            var y = new Date().getFullYear();
+            document.getElementById('copyrightYear').textContent = y;
+
+            // 主题切换
+            applySavedTheme();
+            document.getElementById('btnThemeAuto').onclick = () => setTheme('auto');
+            document.getElementById('btnThemeLight').onclick = () => setTheme('light');
+            document.getElementById('btnThemeDark').onclick = () => setTheme('dark');
+
+            // 预设绑定
+            const northEl = document.getElementById('north');
+            const southEl = document.getElementById('south');
+            const westEl = document.getElementById('west');
+            const eastEl = document.getElementById('east');
+            document.getElementById('presetGlobal').onclick = () => { northEl.value = 90; southEl.value = -90; westEl.value = -180; eastEl.value = 180; };
+            document.getElementById('presetChina').onclick = () => { northEl.value = 53.56; southEl.value = 18.16; westEl.value = 73.50; eastEl.value = 134.77; };
+            document.getElementById('presetEurope').onclick = () => { northEl.value = 72; southEl.value = 34; westEl.value = -25; eastEl.value = 45; };
+
+            // 月份快捷
+            document.getElementById('allMonths').onclick = () => selectAllOptions(document.getElementById('month'));
+            document.getElementById('currentMonth').onclick = () => selectCurrentMonth();
+
+            // 小时快捷
+            document.getElementById('allHours').onclick = () => selectAllOptions(document.getElementById('time'));
+            document.getElementById('synopticHours').onclick = () => selectHours([0,6,12,18]);
+
+            // 恢复本地偏好
+            restoreFormSelections();
+            // 变更即存储
+            document.getElementById('downloadForm').addEventListener('change', saveFormSelections);
         });
 
         function initializeFormOptions() {
@@ -125,7 +312,7 @@
             var yearSelect = document.getElementById('year');
 
             for (var year = startYear; year <= endYear; year++) {
-                var option = new Option(year, year, year === endYear, year === endYear);
+                var option = new Option(year, year);
                 yearSelect.add(option);
             }
 
@@ -147,8 +334,16 @@
         async function handleFormSubmit(event) {
             event.preventDefault();
             showProgress();
+
+            const form = event.target;
+            const submitBtn = document.getElementById('submitBtn');
+            const submitSpinner = document.getElementById('submitSpinner');
+            const progressBar = document.getElementById('progressBar');
+
+            submitBtn.disabled = true;
+            submitSpinner.classList.remove('d-none');
             
-            const formData = new FormData(event.target);
+            const formData = new FormData(form);
             
             try {
                 const response = await fetch('/', {
@@ -161,35 +356,122 @@
                 if (result.success) {
                     showDownloadStatus(result);
                 } else {
-                    alert('下载失败: ' + result.message);
+                    alert('下载失败: ' + (result.message || '未知错误'));
                 }
             } catch (error) {
                 alert('网络错误，请稍后重试');
             } finally {
-                hideProgress();
+                setTimeout(() => { hideProgress(); }, 400);
+                submitSpinner.classList.add('d-none');
+                submitBtn.disabled = false;
             }
         }
 
         function showProgress() {
-            document.getElementById('progressContainer').style.display = 'block';
-            document.getElementById('downloadStatus').classList.remove('show');
-            
+            const container = document.getElementById('progressContainer');
+            const statusBox = document.getElementById('downloadStatus');
+            const bar = document.getElementById('progressBar');
+            const title = document.getElementById('progressTitle');
+            const text = document.getElementById('progressText');
+
+            container.style.display = 'block';
+            statusBox.classList.remove('show');
+
             let progress = 0;
-            const progressBar = document.getElementById('progressBar');
-            
-            const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress > 90) progress = 90;
-                progressBar.style.width = progress + '%';
-                
-                if (progress >= 90) {
-                    clearInterval(interval);
+            bar.style.width = '0%';
+            title.textContent = '正在准备请求...';
+            text.textContent = '排队中，请稍候';
+
+            // 简单校验与归一化可选区域
+            const northEl = document.getElementById('north');
+            const southEl = document.getElementById('south');
+            const westEl = document.getElementById('west');
+            const eastEl = document.getElementById('east');
+            const hasLat = northEl.value !== '' && southEl.value !== '';
+            const hasLon = westEl.value !== '' && eastEl.value !== '';
+            if (hasLat || hasLon) {
+                // 校验范围
+                const n = northEl.value === '' ? 90 : parseFloat(northEl.value);
+                const s = southEl.value === '' ? -90 : parseFloat(southEl.value);
+                const w = westEl.value === '' ? -180 : parseFloat(westEl.value);
+                const e = eastEl.value === '' ? 180 : parseFloat(eastEl.value);
+                if (n < -90 || n > 90 || s < -90 || s > 90 || w < -180 || w > 180 || e < -180 || e > 180) {
+                    alert('区域范围无效，请检查经纬度输入');
+                    return;
                 }
-            }, 500);
+                // 若上下/左右颠倒则自动交换
+                if (n < s) {
+                    northEl.value = s;
+                    southEl.value = n;
+                }
+                if (w > e) {
+                    westEl.value = e;
+                    eastEl.value = w;
+                }
+            }
+
+            // 生成 op_id 并放入隐藏字段
+            const opIdEl = document.getElementById('op_id');
+            if (!opIdEl.value) {
+                opIdEl.value = 'op_' + Math.random().toString(36).slice(2) + Date.now();
+            }
+            const opId = opIdEl.value;
+
+            // 启动轮询真实进度
+            startProgressPolling(opId);
+        }
+
+        function startProgressPolling(opId) {
+            const bar = document.getElementById('progressBar');
+            const title = document.getElementById('progressTitle');
+            const text = document.getElementById('progressText');
+
+            const statusLabels = {
+                submitted: {label: '已提交请求', sub: '等待 CDS 接受请求'},
+                accepted: {label: '请求已接受', sub: 'CDS 正在排队处理'},
+                running: {label: '数据检索中', sub: 'CDS 正在生成与打包数据'},
+                successful: {label: '完成并生成下载链接', sub: '准备下载信息'},
+                failed: {label: '下载失败', sub: '请稍后重试'}
+            };
+
+            if (window.__progressPoller) {
+                clearInterval(window.__progressPoller);
+            }
+            window.__progressPoller = setInterval(async () => {
+                try {
+                                         const resp = await fetch(`/api/progress/${encodeURIComponent(opId)}`);
+                     const data = await resp.json();
+                     const pct = Math.max(0, Math.min(100, data.progress || 0));
+                     const st = data.status || 'submitted';
+                     bar.style.width = pct + '%';
+                     if (statusLabels[st]) {
+                         title.textContent = statusLabels[st].label;
+                         text.textContent = statusLabels[st].sub;
+                     }
+                     if (data.request_id) {
+                         document.getElementById('progressReqId').style.display = 'block';
+                         document.getElementById('reqIdSpan').textContent = data.request_id;
+                     }
+                     if (st === 'successful' || pct >= 100) {
+                         clearInterval(window.__progressPoller);
+                     }
+                } catch (e) {
+                    // 忽略轮询错误，下一次再试
+                }
+            }, 800);
         }
 
         function hideProgress() {
-            document.getElementById('progressContainer').style.display = 'none';
+            const container = document.getElementById('progressContainer');
+            container.style.display = 'none';
+            if (window.__progressTimer) {
+                clearInterval(window.__progressTimer);
+                window.__progressTimer = null;
+            }
+            if (window.__progressPoller) {
+                clearInterval(window.__progressPoller);
+                window.__progressPoller = null;
+            }
         }
 
         function showDownloadStatus(result) {
@@ -201,6 +483,82 @@
             downloadLink.href = result.download_url;
             
             document.getElementById('downloadStatus').classList.add('show');
+        }
+
+        function selectAllOptions(selectEl) {
+            for (let i = 0; i < selectEl.options.length; i++) {
+                selectEl.options[i].selected = true;
+            }
+        }
+
+        function selectCurrentMonth() {
+            const m = new Date().getMonth() + 1; // 1-12
+            const val = (m < 10 ? '0' : '') + m;
+            const selectEl = document.getElementById('month');
+            for (let i = 0; i < selectEl.options.length; i++) {
+                selectEl.options[i].selected = (selectEl.options[i].value === val);
+            }
+        }
+
+        function selectHours(hours) {
+            const selectEl = document.getElementById('time');
+            for (let i = 0; i < selectEl.options.length; i++) {
+                const v = selectEl.options[i].value;
+                const h = parseInt(v.split(':')[0], 10);
+                selectEl.options[i].selected = hours.includes(h);
+            }
+        }
+
+        function saveFormSelections() {
+            const ids = ['product_type','variable','pressure_level','year','month','day','time'];
+            const data = {};
+            for (const id of ids) {
+                const el = document.getElementById(id);
+                if (!el) continue;
+                data[id] = Array.from(el.selectedOptions).map(o => o.value);
+            }
+            data['north'] = document.getElementById('north').value;
+            data['south'] = document.getElementById('south').value;
+            data['west'] = document.getElementById('west').value;
+            data['east'] = document.getElementById('east').value;
+            localStorage.setItem('cds_form', JSON.stringify(data));
+        }
+
+        function restoreFormSelections() {
+            try {
+                const raw = localStorage.getItem('cds_form');
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                const ids = ['product_type','variable','pressure_level','year','month','day','time'];
+                for (const id of ids) {
+                    const el = document.getElementById(id);
+                    if (!el || !Array.isArray(data[id])) continue;
+                    const values = new Set(data[id]);
+                    for (let i = 0; i < el.options.length; i++) {
+                        el.options[i].selected = values.has(el.options[i].value);
+                    }
+                }
+                if (data['north'] !== undefined) document.getElementById('north').value = data['north'];
+                if (data['south'] !== undefined) document.getElementById('south').value = data['south'];
+                if (data['west'] !== undefined) document.getElementById('west').value = data['west'];
+                if (data['east'] !== undefined) document.getElementById('east').value = data['east'];
+            } catch (e) {}
+        }
+
+        function setTheme(mode) {
+            localStorage.setItem('cds_theme', mode);
+            applySavedTheme();
+        }
+
+        function applySavedTheme() {
+            const mode = localStorage.getItem('cds_theme') || 'auto';
+            const b = document.body;
+            b.removeAttribute('data-theme');
+            if (mode === 'dark') {
+                b.setAttribute('data-theme','dark');
+            } else if (mode === 'light') {
+                b.setAttribute('data-theme','light');
+            }
         }
     </script>
 </body>

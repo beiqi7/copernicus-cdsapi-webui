@@ -9,6 +9,7 @@ class Config:
     # 下载配置
     DOWNLOAD_DIR = 'downloads'
     TEMP_LINKS_FILE = 'temp_links.json'
+    DOWNLOAD_INDEX_FILE = 'download_index.json'
     CLEANUP_INTERVAL = 300  # 5分钟清理一次
     
     # 文件大小阈值和过期时间配置（单位：小时）
