@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for, jsonify, session
+from flask import Flask, render_template, request, send_file, redirect, url_for, jsonify, session, g
 try:
     import cdsapi
     CDSAPI_AVAILABLE = True
@@ -11,12 +11,21 @@ import logging
 import os
 import hashlib
 import uuid
+import gc
+import weakref
 from datetime import datetime, timedelta
 import shutil
 from werkzeug.utils import secure_filename
 import json
 from config import config
 from collections import deque
+from error_handler import (
+    create_error_handlers, ValidationError, DownloadError, RateLimitError, 
+    SystemError, retry_on_failure, safe_execute, CircuitBreaker, log_performance
+)
+from input_validator import InputValidator, SecurityValidator
+from enhanced_logging import setup_logging_for_app, enhanced_logger
+from security_manager import SecurityManager, create_security_headers_middleware
 
 def create_app():
     """创建Flask应用的工厂函数"""
@@ -37,6 +46,20 @@ def create_app():
     app.TEMP_LINKS_FILE = app_config.TEMP_LINKS_FILE
     app.DOWNLOAD_INDEX_FILE = getattr(app_config, 'DOWNLOAD_INDEX_FILE', 'download_index.json')
     app.CLEANUP_INTERVAL = app_config.CLEANUP_INTERVAL
+    
+    # 初始化安全管理器
+    security_manager = SecurityManager(secret_key=app.config['SECRET_KEY'])
+    security_manager.init_app(app)
+    app.security_manager = security_manager
+    
+    # 设置安全头
+    create_security_headers_middleware(app)
+    
+    # 设置错误处理器
+    create_error_handlers(app)
+    
+    # 设置增强日志
+    setup_logging_for_app(app)
     
     return app
 
@@ -185,11 +208,20 @@ class ProgressManager:
         }
 
 class DownloadManager:
+    """download manager with improved resource management"""
+    
     def __init__(self):
         self.temp_links = self.load_temp_links()
         self.cleanup_thread = None
-        # 延迟启动清理线程，避免构造函数中的问题
         self.download_index = self.load_download_index()
+        self._active_downloads = weakref.WeakSet()  # Track active downloads
+        self._lock = threading.RLock()  # Reentrant lock for thread safety
+        self._shutdown_flag = threading.Event()
+        
+        # Set up memory monitoring
+        self._memory_check_interval = 60  # Check every minute
+        self._max_memory_usage = 1024 * 1024 * 1024  # 1GB limit
+        self._last_gc_time = time.time()
     
     def load_temp_links(self):
         """加载临时链接信息"""
@@ -270,56 +302,112 @@ class DownloadManager:
             self.save_temp_links()
     
     def cleanup_expired_files(self):
-        """清理过期文件"""
+        """清理过期文件和内存优化"""
         current_time = datetime.now()
         expired_links = []
         
-        for link_id, link_info in self.temp_links.items():
-            expiry_time = datetime.fromisoformat(link_info['expires_at'])
-            
-            # 检查是否过期或达到最大下载次数
-            if (current_time > expiry_time or 
-                link_info['download_count'] >= link_info['max_downloads']):
-                
-                expired_links.append(link_id)
-                
-                # 删除文件
+        with self._lock:
+            for link_id, link_info in list(self.temp_links.items()):
                 try:
-                    if os.path.exists(link_info['file_path']):
-                        os.remove(link_info['file_path'])
-                        logging.info(f"删除过期文件: {link_info['filename']}")
+                    expiry_time = datetime.fromisoformat(link_info['expires_at'])
+                    
+                    # 检查是否过期或达到最大下载次数
+                    if (current_time > expiry_time or 
+                        link_info['download_count'] >= link_info['max_downloads']):
+                        
+                        expired_links.append(link_id)
+                        
+                        # 安全删除文件
+                        safe_execute(
+                            lambda: self._safe_remove_file(link_info['file_path'], link_info['filename']),
+                            log_error=True
+                        )
+                        
                 except Exception as e:
-                    logging.error(f"删除文件失败 {link_info['filename']}: {e}")
+                    logging.error(f"处理链接 {link_id} 时发生错误: {e}")
+                    expired_links.append(link_id)  # 删除有问题的链接
+            
+            # 从临时链接中移除
+            for link_id in expired_links:
+                self.temp_links.pop(link_id, None)
+            
+            if expired_links:
+                safe_execute(self.save_temp_links, log_error=True)
+                logging.info(f"清理了 {len(expired_links)} 个过期链接")
         
-        # 从临时链接中移除
-        for link_id in expired_links:
-            del self.temp_links[link_id]
-        
-        if expired_links:
-            self.save_temp_links()
-            logging.info(f"清理了 {len(expired_links)} 个过期链接")
+        # 执行内存清理
+        self._perform_memory_cleanup()
+    
+    def _safe_remove_file(self, file_path: str, filename: str):
+        """安全删除文件"""
+        if os.path.exists(file_path):
+            # 验证文件路径安全性
+            if SecurityValidator.validate_file_path(file_path, app.DOWNLOAD_DIR):
+                os.remove(file_path)
+                logging.info(f"删除过期文件: {filename}")
+            else:
+                logging.error(f"安全检查失败，拒绝删除文件: {file_path}")
+    
+    def _perform_memory_cleanup(self):
+        """执行内存清理"""
+        current_time = time.time()
+        if current_time - self._last_gc_time > self._memory_check_interval:
+            try:
+                # 检查内存使用情况
+                import psutil
+                process = psutil.Process()
+                memory_info = process.memory_info()
+                
+                if memory_info.rss > self._max_memory_usage:
+                    logging.warning(f"内存使用超过限制: {memory_info.rss / 1024 / 1024:.1f}MB")
+                    gc.collect()  # 强制垃圾回收
+                    
+                self._last_gc_time = current_time
+                
+            except ImportError:
+                # psutil 不可用时的回退方案
+                gc.collect()
+                self._last_gc_time = current_time
+            except Exception as e:
+                logging.error(f"内存清理失败: {e}")
     
     def start_cleanup_thread(self):
-        """启动清理线程"""
+        """启动增强的清理线程"""
         if self.cleanup_thread and self.cleanup_thread.is_alive():
             return  # 线程已经在运行
         
         try:
             def cleanup_loop():
-                while True:
+                while not self._shutdown_flag.is_set():
                     try:
                         self.cleanup_expired_files()
-                        time.sleep(app.CLEANUP_INTERVAL)
+                        # 使用事件等待而不是 sleep，使关闭更加响应
+                        self._shutdown_flag.wait(timeout=app.CLEANUP_INTERVAL)
                     except Exception as e:
                         logging.error(f"清理线程错误: {e}")
-                        time.sleep(app.CLEANUP_INTERVAL)
+                        self._shutdown_flag.wait(timeout=app.CLEANUP_INTERVAL)
+                
+                logging.info("清理线程已关闭")
             
-            self.cleanup_thread = threading.Thread(target=cleanup_loop, daemon=True)
+            self.cleanup_thread = threading.Thread(target=cleanup_loop, daemon=True, name="CleanupThread")
             self.cleanup_thread.start()
-            logging.info("清理线程已启动")
+            logging.info("增强清理线程已启动")
         except Exception as e:
             logging.error(f"启动清理线程失败: {e}")
-            # 不抛出异常，让应用继续运行
+            raise SystemError(f"无法启动清理线程: {e}", component="DownloadManager")
+    
+    def shutdown(self):
+        """关闭下载管理器"""
+        logging.info("正在关闭下载管理器...")
+        self._shutdown_flag.set()
+        
+        if self.cleanup_thread and self.cleanup_thread.is_alive():
+            self.cleanup_thread.join(timeout=5)
+            if self.cleanup_thread.is_alive():
+                logging.warning("清理线程未能在规定时间内关闭")
+        
+        # 最后一次清理
+        safe_execute(self.cleanup_expired_files, log_error=True)
 
     def load_download_index(self):
         try:
@@ -385,34 +473,65 @@ except Exception as e:
 # 移除模块级别的实例创建
 # download_manager = DownloadManager()
 
-def download_ecmwf_data(params):
-    """下载ECMWF数据"""
+@retry_on_failure(max_retries=2, delay=5, exceptions=(Exception,))
+@log_performance
+def download_ecmwf_data(params, op_id=None):
+    """下载ECMWF数据（增强版）"""
     if not CDSAPI_AVAILABLE:
-        logging.error("cdsapi 不可用，无法下载数据")
-        return None, None
+        raise SystemError("cdsapi 不可用，无法下载数据", component="CDS API")
     
     try:
+        # 记录下载开始
+        if hasattr(app, 'logger'):
+            app.logger.info(f"开始下载数据: op_id={op_id}")
+        
         c = cdsapi.Client()
         dataset = "reanalysis-era5-pressure-levels"
+        
+        # 设置当前操作 ID 用于进度跟踪
+        if op_id:
+            app.current_op_id = op_id
+        
         result = c.retrieve(dataset, params)
         
-        # 生成文件名
+        # 生成安全的文件名
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{params['pressure_level'][0]}_{params['year'][0]}_{params['month'][0]}_{params['day'][0]}_{timestamp}.nc"
+        base_filename = f"{params['pressure_level'][0]}_{params['year'][0]}_{params['month'][0]}_{params['day'][0]}_{timestamp}.nc"
+        filename = InputValidator.sanitize_filename(base_filename)
         file_path = os.path.join(app.DOWNLOAD_DIR, filename)
+        
+        # 验证文件路径安全性
+        if not SecurityValidator.validate_file_path(file_path, app.DOWNLOAD_DIR):
+            raise ValidationError("文件路径不安全", field="file_path", value=file_path)
         
         # 下载文件
         result.download(file_path)
         
-        # 获取文件大小
-        file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
+        # 获取文件大小并验证
+        if not os.path.exists(file_path):
+            raise DownloadError("下载的文件不存在", operation="file_check")
         
+        file_size_bytes = os.path.getsize(file_path)
+        file_size_mb = file_size_bytes / (1024 * 1024)
+        
+        # 验证文件大小
+        if file_size_bytes == 0:
+            os.remove(file_path)  # 删除空文件
+            raise DownloadError("下载的文件为空", operation="file_validation")
+        
+        # 记录成功
         logging.info(f"数据下载成功: {filename}, 大小: {file_size_mb:.2f}MB")
+        
+        if hasattr(app, 'performance_monitor'):
+            app.performance_monitor.record_metric('download_size_mb', file_size_mb)
+        
         return filename, file_size_mb
         
     except Exception as e:
         logging.error(f"API调用失败: {e}")
-        return None, None
+        if isinstance(e, (ValidationError, DownloadError, SystemError)):
+            raise
+        raise DownloadError(f"ECMWF API 调用失败: {str(e)}", operation="api_call", params=params)
 
 def download_with_timeout(params):
     """带超时的下载"""
