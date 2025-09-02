@@ -8,6 +8,12 @@ class Config:
     # 基本配置
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-here-change-in-production'
     
+    # CDS API 配置 - 必须配置才能使用
+    # 获取方式：访问 https://cds.climate.copernicus.eu/user
+    # 登录后点击 "API key" 获取 UID 和 API Key
+    CDS_API_UID = os.environ.get('CDS_API_UID') or 'your-cds-uid-here'
+    CDS_API_KEY = os.environ.get('CDS_API_KEY') or 'your-cds-api-key-here'
+    
     # 下载配置
     DOWNLOAD_DIR = 'downloads'
     TEMP_LINKS_FILE = 'temp_links.json'
@@ -88,4 +94,25 @@ class LongExpiryConfig(Config):
 config_class = Config                  # 默认配置（推荐）
 
 # 应用配置
-app_config = config_class() 
+app_config = config_class()
+
+# ============================================================================
+# CDS API 配置说明
+# ============================================================================
+"""
+要使用此应用，你必须先获取 Copernicus Climate Data Store (CDS) 的 API 密钥：
+
+1. 访问 https://cds.climate.copernicus.eu/user
+2. 创建账户或登录现有账户
+3. 点击 "API key" 标签页
+4. 复制你的 UID 和 API Key
+5. 在 config.py 中设置：
+   CDS_API_UID = 'your-uid-here'
+   CDS_API_KEY = 'your-api-key-here'
+
+或者通过环境变量设置：
+export CDS_API_UID='your-uid-here'
+export CDS_API_KEY='your-api-key-here'
+
+注意：API 密钥格式必须是 <UID>:<APIKEY>，这是 CDS 的要求。
+""" 

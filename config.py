@@ -6,6 +6,10 @@ class Config:
     # 基本配置
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-here-change-in-production'
     
+    # CDS API 配置
+    CDS_API_UID = os.environ.get('CDS_API_UID') or 'your-cds-uid-here'
+    CDS_API_KEY = os.environ.get('CDS_API_KEY') or 'your-cds-api-key-here'
+    
     # 下载配置
     DOWNLOAD_DIR = 'downloads'
     TEMP_LINKS_FILE = 'temp_links.json'

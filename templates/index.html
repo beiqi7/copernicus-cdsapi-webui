@@ -7,59 +7,267 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        body { background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 100%); }
-        .container { max-width: 1080px; }
-        h1 { background: linear-gradient(90deg, #0d6efd, #6610f2); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .download-status { display: none; margin-top: 20px; }
-        .download-status.show { display: block; }
-        .progress-container { display: none; margin: 24px 0; }
-        .progress { height: 12px; background-color: #e9ecef; }
-        .alert { box-shadow: 0 8px 24px rgba(0,0,0,0.06); border: 0; border-left: 4px solid #198754; }
-        .form-select[multiple] { min-height: 160px; }
-        .btn-lg { padding: 0.75rem 1.5rem; }
-        footer { border-top: 1px solid #e9ecef; }
-        footer a { text-decoration: none; }
-        footer a:hover { text-decoration: underline; }
-        .hero { background: linear-gradient(135deg, rgba(13,110,253,0.08), rgba(102,16,242,0.08)); border: 1px solid rgba(13,110,253,0.08); border-radius: 16px; padding: 16px 20px; }
-        .btn-outline-secondary.active { background-color: #0d6efd; color: #fff; border-color: #0d6efd; }
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1080; }
-
-        @media (prefers-color-scheme: dark) {
-            body { background: linear-gradient(180deg, #0b0e13 0%, #12161d 100%); color: #e2e6ea; }
-            .alert { background-color: #0f5132; border-left-color: #198754; color: #d1fae5; }
-            .form-select[multiple] { background-color: #1c2128; color: #e2e6ea; border-color: #30363d; }
-            .form-select option { background-color: #1c2128; color: #e2e6ea; }
-            .progress { background-color: #2b3138; }
-            footer { border-top-color: #2b3138; }
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6610f2;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #0dcaf0;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+            --border-radius: 12px;
+            --shadow: 0 8px 32px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
         }
-        /* 手动主题覆盖 */
-        body[data-theme='dark'] { background: linear-gradient(180deg, #0b0e13 0%, #12161d 100%) !important; color: #e2e6ea !important; }
-        body[data-theme='dark'] .alert { background-color: #0f5132 !important; border-left-color: #198754 !important; color: #d1fae5 !important; }
-        body[data-theme='dark'] .form-select[multiple] { background-color: #1c2128 !important; color: #e2e6ea !important; border-color: #30363d !important; }
-        body[data-theme='dark'] .form-select option { background-color: #1c2128 !important; color: #e2e6ea !important; }
-        body[data-theme='dark'] .progress { background-color: #2b3138 !important; }
-        body[data-theme='dark'] footer { border-top-color: #2b3138 !important; }
 
-        body[data-theme='light'] { background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 100%) !important; color: #212529 !important; }
-        body[data-theme='light'] .alert { background-color: #d1e7dd !important; color: #0f5132 !important; }
-        body[data-theme='light'] .form-select[multiple] { background-color: #fff !important; color: #212529 !important; border-color: #ced4da !important; }
-        body[data-theme='light'] .form-select option { background-color: #fff !important; color: #212529 !important; }
-        body[data-theme='light'] .progress { background-color: #e9ecef !important; }
-        body[data-theme='light'] footer { border-top-color: #e9ecef !important; }
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto;
+        }
+        
+        h1 { 
+            background: linear-gradient(90deg, #667eea, #764ba2); 
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            color: transparent;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .download-status { 
+            display: none; 
+            margin-top: 20px; 
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .download-status.show { 
+            display: block; 
+        }
+        
+        .progress-container { 
+            display: none; 
+            margin: 24px 0; 
+            background: rgba(255,255,255,0.95);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+        
+        .progress { 
+            height: 16px; 
+            background-color: #e9ecef; 
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+        
+        .alert { 
+            box-shadow: var(--shadow); 
+            border: 0; 
+            border-left: 4px solid var(--success-color); 
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-select[multiple] { 
+            min-height: 160px; 
+            border-radius: var(--border-radius);
+            border: 2px solid #e9ecef;
+            transition: var(--transition);
+        }
+        
+        .form-select[multiple]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .btn-lg { 
+            padding: 1rem 2rem; 
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-lg:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        
+        .card {
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 0;
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));
+            border-bottom: 1px solid rgba(102,126,234,0.2);
+            border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+        }
+        
+        footer { 
+            border-top: 1px solid rgba(255,255,255,0.2); 
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            margin-top: 3rem;
+        }
+        
+        footer a { 
+            text-decoration: none; 
+            color: rgba(255,255,255,0.8);
+            transition: var(--transition);
+        }
+        
+        footer a:hover { 
+            text-decoration: underline; 
+            color: white;
+        }
+        
+        .hero { 
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            border-radius: var(--border-radius); 
+            padding: 24px 32px; 
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-outline-secondary { 
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+        
+        .btn-outline-secondary:hover,
+        .btn-outline-secondary.active { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: #fff; 
+            border-color: transparent;
+            transform: translateY(-1px);
+        }
+        
+        .toast-container { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            z-index: 1080; 
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .input-group-text {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container { padding: 0 15px; }
+            .hero { padding: 16px 20px; }
+            .btn-lg { padding: 0.75rem 1.5rem; }
+        }
+        
+        /* 加载动画 */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container mt-5">
-        <div class="d-flex align-items-center justify-content-between mb-3 hero">
+        <div class="d-flex align-items-center justify-content-between mb-4 hero">
             <div class="flex-grow-1">
-                <h1 class="mb-0 display-6 fw-bold"><i class="bi bi-cloud-arrow-down me-2"></i>Copernicus 数据下载系统</h1>
-                <p class="text-muted mb-0">ERA5 压力层数据快速下载与临时链接分享</p>
+                <h1 class="mb-2 display-5 fw-bold">
+                    <i class="bi bi-cloud-arrow-down me-3"></i>Copernicus 数据下载系统
+                </h1>
+                <p class="text-white mb-0 fs-5 opacity-75">
+                    <i class="bi bi-geo-alt me-2"></i>ERA5 压力层数据快速下载与临时链接分享
+                </p>
+                <div class="mt-3">
+                    <span class="badge bg-success me-2">
+                        <i class="bi bi-shield-check me-1"></i>安全可靠
+                    </span>
+                    <span class="badge bg-info me-2">
+                        <i class="bi bi-lightning me-1"></i>快速下载
+                    </span>
+                    <span class="badge bg-warning">
+                        <i class="bi bi-clock me-1"></i>实时进度
+                    </span>
+                </div>
             </div>
-            <div>
-                <div class="btn-group btn-group-sm" role="group" aria-label="主题">
-                    <button type="button" class="btn btn-outline-secondary" id="btnThemeAuto" title="跟随系统"><i class="bi bi-circle-half"></i></button>
-                    <button type="button" class="btn btn-outline-secondary" id="btnThemeLight" title="浅色"><i class="bi bi-brightness-high"></i></button>
-                    <button type="button" class="btn btn-outline-secondary" id="btnThemeDark" title="深色"><i class="bi bi-moon-stars"></i></button>
+            <div class="text-end">
+                <div class="btn-group btn-group-sm" role="group" aria-label="主题切换">
+                    <button type="button" class="btn btn-outline-light" id="btnThemeAuto" title="跟随系统">
+                        <i class="bi bi-circle-half"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-light" id="btnThemeLight" title="浅色主题">
+                        <i class="bi bi-brightness-high"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-light" id="btnThemeDark" title="深色主题">
+                        <i class="bi bi-moon-stars"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -73,152 +281,196 @@
                     </div>
                     <div class="card-body">
                 <form id="downloadForm" method="POST">
-                    <div class="mb-3 d-flex flex-wrap gap-2">
-                        <div class="btn-group" role="group" aria-label="区域预设">
-                            <button class="btn btn-outline-secondary btn-sm" type="button" id="presetGlobal">全球</button>
-                            <button class="btn btn-outline-secondary btn-sm" type="button" id="presetChina">中国大陆</button>
-                            <button class="btn btn-outline-secondary btn-sm" type="button" id="presetEurope">欧洲</button>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="bi bi-geo-alt me-2"></i>快速预设
+                        </h6>
+                        <div class="d-flex flex-wrap gap-3 mb-3">
+                            <div class="btn-group" role="group" aria-label="区域预设">
+                                <button class="btn btn-outline-primary btn-sm" type="button" id="presetGlobal">
+                                    <i class="bi bi-globe me-1"></i>全球
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm" type="button" id="presetChina">
+                                    <i class="bi bi-geo-alt me-1"></i>中国大陆
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm" type="button" id="presetEurope">
+                                    <i class="bi bi-geo-alt me-1"></i>欧洲
+                                </button>
+                            </div>
                         </div>
-                        <div class="btn-group" role="group" aria-label="月份快捷">
-                            <button class="btn btn-outline-secondary btn-sm" type="button" id="allMonths">全年</button>
-                            <button class="btn btn-outline-secondary btn-sm" type="button" id="currentMonth">当月</button>
-                        </div>
-                        <div class="btn-group" role="group" aria-label="小时快捷">
-                            <button class="btn btn-outline-secondary btn-sm" type="button" id="allHours">全天</button>
-                            <button class="btn btn-outline-secondary btn-sm" type="button" id="synopticHours">00/06/12/18</button>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div class="btn-group" role="group" aria-label="时间快捷">
+                                <button class="btn btn-outline-success btn-sm" type="button" id="allMonths">
+                                    <i class="bi bi-calendar-range me-1"></i>全年
+                                </button>
+                                <button class="btn btn-outline-success btn-sm" type="button" id="currentMonth">
+                                    <i class="bi bi-calendar-month me-1"></i>当月
+                                </button>
+                                <button class="btn btn-outline-success btn-sm" type="button" id="allHours">
+                                    <i class="bi bi-clock me-1"></i>全天
+                                </button>
+                                <button class="btn btn-outline-success btn-sm" type="button" id="synopticHours">
+                                    <i class="bi bi-clock-history me-1"></i>00/06/12/18
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <input type="hidden" name="op_id" id="op_id" value="">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="product_type" class="form-label">产品类型</label>
+                        <div class="col-md-6 mb-4">
+                            <label for="product_type" class="form-label">
+                                <i class="bi bi-box me-2"></i>产品类型
+                            </label>
                             <select id="product_type" name="product_type" class="form-select" multiple required>
-                                <option value="reanalysis">reanalysis</option>
-                                <option value="ensemble_members">ensemble_members</option>
-                                <option value="ensemble_mean">ensemble_mean</option>
-                                <option value="ensemble_spread">ensemble_spread</option>
+                                <option value="reanalysis">📊 再分析数据 (reanalysis)</option>
+                                <option value="ensemble_members">🎲 集合成员 (ensemble_members)</option>
+                                <option value="ensemble_mean">📈 集合平均 (ensemble_mean)</option>
+                                <option value="ensemble_spread">📉 集合扩散 (ensemble_spread)</option>
                             </select>
+                            <div class="form-text">选择数据产品类型</div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="variable" class="form-label">变量</label>
+                        <div class="col-md-6 mb-4">
+                            <label for="variable" class="form-label">
+                                <i class="bi bi-graph-up me-2"></i>气象变量
+                            </label>
                             <select id="variable" name="variable" class="form-select" multiple required>
-                                <option value="divergence">divergence</option>
-                                <option value="fraction_of_cloud_cover">fraction_of_cloud_cover</option>
-                                <option value="geopotential">geopotential</option>
-                                <option value="ozone_mass_mixing_ratio">ozone_mass_mixing_ratio</option>
-                                <option value="potential_vorticity">potential_vorticity</option>
-                                <option value="relative_humidity">relative_humidity</option>
-                                <option value="specific_cloud_ice_water_content">specific_cloud_ice_water_content</option>
-                                <option value="specific_cloud_liquid_water_content">specific_cloud_liquid_water_content</option>
-                                <option value="specific_humidity">specific_humidity</option>
-                                <option value="specific_rain_water_content">specific_rain_water_content</option>
-                                <option value="specific_snow_water_content">specific_snow_water_content</option>
-                                <option value="temperature">temperature</option>
-                                <option value="u_component_of_wind">u_component_of_wind</option>
-                                <option value="v_component_of_wind">v_component_of_wind</option>
-                                <option value="vertical_velocity">vertical_velocity</option>
-                                <option value="vorticity">vorticity</option>
+                                <option value="divergence">🌪️ 散度 (divergence)</option>
+                                <option value="fraction_of_cloud_cover">☁️ 云量 (fraction_of_cloud_cover)</option>
+                                <option value="geopotential">🏔️ 位势高度 (geopotential)</option>
+                                <option value="ozone_mass_mixing_ratio">🫧 臭氧质量混合比 (ozone_mass_mixing_ratio)</option>
+                                <option value="potential_vorticity">🌀 位涡 (potential_vorticity)</option>
+                                <option value="relative_humidity">💧 相对湿度 (relative_humidity)</option>
+                                <option value="specific_cloud_ice_water_content">🧊 云冰水含量 (specific_cloud_ice_water_content)</option>
+                                <option value="specific_cloud_liquid_water_content">💦 云液态水含量 (specific_cloud_liquid_water_content)</option>
+                                <option value="specific_humidity">💨 比湿 (specific_humidity)</option>
+                                <option value="specific_rain_water_content">🌧️ 雨水含量 (specific_rain_water_content)</option>
+                                <option value="specific_snow_water_content">❄️ 雪水含量 (specific_snow_water_content)</option>
+                                <option value="temperature">🌡️ 温度 (temperature)</option>
+                                <option value="u_component_of_wind">💨 风U分量 (u_component_of_wind)</option>
+                                <option value="v_component_of_wind">💨 风V分量 (v_component_of_wind)</option>
+                                <option value="vertical_velocity">⬆️ 垂直速度 (vertical_velocity)</option>
+                                <option value="vorticity">🌪️ 涡度 (vorticity)</option>
                             </select>
+                            <div class="form-text">选择需要的气象变量</div>
                         </div>
                     </div>
                     
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="pressure_level" class="form-label">压力层</label>
+                        <div class="col-md-6 mb-4">
+                            <label for="pressure_level" class="form-label">
+                                <i class="bi bi-layers me-2"></i>压力层 (hPa)
+                            </label>
                             <select id="pressure_level" name="pressure_level" class="form-select" multiple required>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="5">5</option>
-                                <option value="7">7</option>
-                                <option value="10">10</option>
-                                <option value="20">20</option>
-                                <option value="30">30</option>
-                                <option value="50">50</option>
-                                <option value="70">70</option>
-                                <option value="100">100</option>
-                                <option value="125">125</option>
-                                <option value="150">150</option>
-                                <option value="175">175</option>
-                                <option value="200">200</option>
-                                <option value="225">225</option>
-                                <option value="250">250</option>
-                                <option value="300">300</option>
-                                <option value="350">350</option>
-                                <option value="400">400</option>
-                                <option value="450">450</option>
-                                <option value="500">500</option>
-                                <option value="550">550</option>
-                                <option value="600">600</option>
-                                <option value="650">650</option>
-                                <option value="700">700</option>
-                                <option value="750">750</option>
-                                <option value="775">775</option>
-                                <option value="800">800</option>
-                                <option value="825">825</option>
-                                <option value="850">850</option>
-                                <option value="875">875</option>
-                                <option value="900">900</option>
-                                <option value="925">925</option>
-                                <option value="950">950</option>
-                                <option value="975">975</option>
-                                <option value="1000">1000</option>
+                                <option value="1">1 hPa (最高层)</option>
+                                <option value="2">2 hPa</option>
+                                <option value="3">3 hPa</option>
+                                <option value="5">5 hPa</option>
+                                <option value="7">7 hPa</option>
+                                <option value="10">10 hPa</option>
+                                <option value="20">20 hPa</option>
+                                <option value="30">30 hPa</option>
+                                <option value="50">50 hPa</option>
+                                <option value="70">70 hPa</option>
+                                <option value="100">100 hPa</option>
+                                <option value="125">125 hPa</option>
+                                <option value="150">150 hPa</option>
+                                <option value="175">175 hPa</option>
+                                <option value="200">200 hPa</option>
+                                <option value="225">225 hPa</option>
+                                <option value="250">250 hPa</option>
+                                <option value="300">300 hPa</option>
+                                <option value="350">350 hPa</option>
+                                <option value="400">400 hPa</option>
+                                <option value="450">450 hPa</option>
+                                <option value="500">500 hPa</option>
+                                <option value="550">550 hPa</option>
+                                <option value="600">600 hPa</option>
+                                <option value="650">650 hPa</option>
+                                <option value="700">700 hPa</option>
+                                <option value="750">750 hPa</option>
+                                <option value="775">775 hPa</option>
+                                <option value="800">800 hPa</option>
+                                <option value="825">825 hPa</option>
+                                <option value="850">850 hPa</option>
+                                <option value="875">875 hPa</option>
+                                <option value="900">900 hPa</option>
+                                <option value="925">925 hPa</option>
+                                <option value="950">950 hPa</option>
+                                <option value="975">975 hPa</option>
+                                <option value="1000">1000 hPa (地面层)</option>
                             </select>
+                            <div class="form-text">选择大气压力层，从高空到地面</div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="year" class="form-label">年份</label>
+                        <div class="col-md-6 mb-4">
+                            <label for="year" class="form-label">
+                                <i class="bi bi-calendar-year me-2"></i>年份
+                            </label>
                             <select id="year" name="year" class="form-select" multiple required></select>
+                            <div class="form-text">选择数据年份范围</div>
                         </div>
                     </div>
                     
                     <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="month" class="form-label">月份</label>
+                        <div class="col-md-4 mb-4">
+                            <label for="month" class="form-label">
+                                <i class="bi bi-calendar-month me-2"></i>月份
+                            </label>
                             <select id="month" name="month" class="form-select" multiple required>
-                                <option value="01">January</option>
-                                <option value="02">February</option>
-                                <option value="03">March</option>
-                                <option value="04">April</option>
-                                <option value="05">May</option>
-                                <option value="06">June</option>
-                                <option value="07">July</option>
-                                <option value="08">August</option>
-                                <option value="09">September</option>
-                                <option value="10">October</option>
-                                <option value="11">November</option>
-                                <option value="12">December</option>
-                        </select>
+                                <option value="01">1月 (January)</option>
+                                <option value="02">2月 (February)</option>
+                                <option value="03">3月 (March)</option>
+                                <option value="04">4月 (April)</option>
+                                <option value="05">5月 (May)</option>
+                                <option value="06">6月 (June)</option>
+                                <option value="07">7月 (July)</option>
+                                <option value="08">8月 (August)</option>
+                                <option value="09">9月 (September)</option>
+                                <option value="10">10月 (October)</option>
+                                <option value="11">11月 (November)</option>
+                                <option value="12">12月 (December)</option>
+                            </select>
+                            <div class="form-text">选择数据月份</div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="day" class="form-label">日期</label>
+                        <div class="col-md-4 mb-4">
+                            <label for="day" class="form-label">
+                                <i class="bi bi-calendar-day me-2"></i>日期
+                            </label>
                             <select id="day" name="day" class="form-select" multiple required></select>
+                            <div class="form-text">选择数据日期</div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="time" class="form-label">时间</label>
+                        <div class="col-md-4 mb-4">
+                            <label for="time" class="form-label">
+                                <i class="bi bi-clock me-2"></i>时间
+                            </label>
                             <select id="time" name="time" class="form-select" multiple required></select>
+                            <div class="form-text">选择数据时间</div>
                         </div>
                     </div>
                     
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">可选区域（纬向范围）</label>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">
+                                <i class="bi bi-geo-alt me-2"></i>纬度范围
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text">北</span>
                                 <input type="number" step="0.01" min="-90" max="90" class="form-control" name="north" id="north" placeholder="90（默认）">
                                 <span class="input-group-text">南</span>
                                 <input type="number" step="0.01" min="-90" max="90" class="form-control" name="south" id="south" placeholder="-90（默认）">
                             </div>
-                            <div class="form-text">范围：-90 到 90</div>
+                            <div class="form-text">纬度范围：-90° 到 90°，留空使用全球范围</div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">可选区域（经向范围）</label>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">
+                                <i class="bi bi-geo-alt me-2"></i>经度范围
+                            </label>
                             <div class="input-group">
                                 <span class="input-group-text">西</span>
                                 <input type="number" step="0.01" min="-180" max="180" class="form-control" name="west" id="west" placeholder="-180（默认）">
                                 <span class="input-group-text">东</span>
                                 <input type="number" step="0.01" min="-180" max="180" class="form-control" name="east" id="east" placeholder="180（默认）">
                             </div>
-                            <div class="form-text">范围：-180 到 180</div>
+                            <div class="form-text">经度范围：-180° 到 180°，留空使用全球范围</div>
                         </div>
                     </div>
 

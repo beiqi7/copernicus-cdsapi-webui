@@ -179,6 +179,17 @@ def download_ecmwf_data(params, op_id=None):
         if hasattr(app, 'logger'):
             app.logger.info(f"开始下载数据: op_id={op_id}")
         
+        # 从配置获取CDS API凭据
+        uid = app.config.get('CDS_API_UID', '')
+        key = app.config.get('CDS_API_KEY', '')
+        
+        if not uid or not key:
+            raise SystemError("CDS API 凭据未配置，请在 config.py 中设置 CDS_API_UID 和 CDS_API_KEY", component="CDS API")
+        
+        # 设置CDS API凭据
+        os.environ['CDSAPI_URL'] = 'https://cds.climate.copernicus.eu/api/v2'
+        os.environ['CDSAPI_KEY'] = f"{uid}:{key}"
+        
         c = cdsapi.Client()
         dataset = "reanalysis-era5-pressure-levels"
         
