@@ -320,6 +320,7 @@ def create_request_logger(logger: EnhancedLogger):
         logger.log_request(request_info)
     
     def log_response(response):
+        from flask import g
         if hasattr(g, 'request_start_time'):
             duration = time.time() - g.request_start_time
             logger.performance_monitor.record_metric('request_duration', duration)
